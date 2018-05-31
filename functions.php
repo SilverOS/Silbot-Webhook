@@ -3,8 +3,18 @@ echo "<br />Funzioni";
 
 function sr($method, $args){
 global $token;
-$query = http_build_query($args);
-	file_get_contents("http://api.telegram.org/$token/$method?".$query);
+$args = http_build_query($args);
+	        $request = curl_init("https://api.telegram.org/bot$token/$method");   
+            curl_setopt_array($request, array(
+            CURLOPT_CONNECTTIMEOUT => 1,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_USERAGENT => 'cURL request',
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => $args,
+        ));
+        $result = curl_exec($request);
+        curl_close($request);
+return $result;
 }
 function action($chatID, $action) {
 $args = array(
