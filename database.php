@@ -5,6 +5,11 @@ echo "<br />Database";
 
 if($_GET['install'] and $_GET['userbot'])
 {
+if ($config['tipo_db'] == "json") {
+	touch("database.json");
+	
+	
+} elseif ($config['tipo_db'] == "mysql") {
 if ($config['altervista']) {
 $url = explode(".",$_SERVER["HTTP_HOST"]);
 $dir = dirname($_SERVER["PHP_SELF"]);
@@ -27,7 +32,40 @@ page varchar(200),
 PRIMARY KEY (id))");
 echo "<br>HO INSTALLATO IL DATABASE";
 }
+
 }
+}
+if ($config['tipo_db'] == "json"){
+	$dbcontent = json_decode(file_get_contents("database.json"), true);
+	if (!in_array($chatID, $dbcontent)) {
+		if ($chatID == $userID) {
+		$dbcontent[$chatID] = array(
+		"chat_id" => $chatID,
+		"username" => "$username",
+		"page" => "",
+		);
+		} else {
+		$dbcontent[$chatID] = array(
+		"chat_id" => $chatID,
+		"username" => "$usernamechat",
+		"page" => "",
+		);
+		if (!in_array($userID, $dbcontent)) {
+		$dbcontent[$userID] = array(
+		"chat_id" => $userID,
+		"username" => "$username",
+		"page" => "group",
+		);
+		}
+		}
+	} else {
+		if ($dbcontent[$chatID]["page"] == "ban") {
+			sm($chatID, "Sei bannato dall'utilizzo del Bot.");
+exit;
+		}
+	}
+file_put_contents("database.json", json_encode($dbcontent));
+} elseif ($config['tipo_db'] == "mysql") {
 if ($config['altervista']){
 	$url = explode(".",$_SERVER["HTTP_HOST"]);
 $dir = dirname($_SERVER["PHP_SELF"]);
@@ -66,6 +104,7 @@ if($u['page'] == "ban")
 {
 sm($chatID, "Sei bannato dall'utilizzo del Bot.");
 exit;
+}
 }
 }
 }
