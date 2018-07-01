@@ -12,12 +12,13 @@ $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 $config = array(
 "db" => true, // true per usare un database mysql, false per non usarlo
-//DATABASE
-"altervista" => true, //true se usi altervista, false se non lo usi
+"tipo_db" => "json", //"mysql" per un database mysql, "json" per un database attraverso file json
+//MYSQL
+"altervista" => false, //true se usi altervista, false se non lo usi
 "ip" => "localhost", // se non usi altervista metti l'indirizzo del database, di norma localhost se è hostato sullo stesso server
 "user" => "root", //se non usi altervista inserisci il nome utente del DB
-"password" => "psw", //se non usi altervista inserisci la password di mysql
-"database" => "db", //se non usi altervista inserisci il nome del database
+"password" => "ciano", //se non usi altervista inserisci la password di mysql
+"database" => "silver", //se non usi altervista inserisci il nome del database
 //TELEGRAM
 "action" => true, //true per mandare azioni come typing... e false per non mandare nulla
 "parse_mode"=> "HTML" ,//Formattazione presefinita messaggio, HTML, Markdown o none
