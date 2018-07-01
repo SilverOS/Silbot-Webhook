@@ -1,9 +1,139 @@
-<?php
-
+﻿<?php
 echo "<br>Plugin Utenti 2.0";
 //iscritti
+if ($config["db"]) {
+	if ($config['tipo_db'] == "json"){
+if(strpos($msg, "/iscritti")===0 and $isadmin ){
+$private = 0;
+$gruppi = 0;
+$usr= 0;
+$tot = count($dbcontent);
+foreach ($dbcontent as $us) {
+if ($us["chat_id"] > 0 && $us["page"] !== "group") {
+	$private++;
+} elseif ($us["page"] == "group") {
+	$usr++;
+} elseif ($us["chat_id"] < 0) {
+	$gruppi++;
+}
+	
+}
+
+$iscritti = "*👤ISCRITTI AL BOT*";
+$iscritti .= "\n   👤Chat Private: $private";
+$iscritti .= "\n   👥Chat Gruppi: $gruppi";
+
+$iscritti.= "\n\n*👥UTENTI SUI GRUPPI*";
+$iscritti .= "\n 👤Utenti: $usr";
+$iscritti .= "\n 👤Utenti totali: $tot";
+sm($chatID, $iscritti);
+}
+if(strpos($msg, "/post")===0 and $isadmin)
+{
+$t = array(array(array(
+"text" => "👤 Utenti",
+"callback_data" => "/2post 1"
+),
+array(
+"text" => "Gruppi 👥",
+"callback_data" => "/2post 2"
+)),
+array(array(
+"text" => "👤 Utenti e Gruppi 👥",
+"callback_data" => "/2post 3"
+)));
+
+sm($chatID, "Ok, dove vuoi inviare il messaggio globale?
+
+_Se selezioni gruppi, invia anche nei canali conosciuti._", $t, "inline", 'Markdown');
+}
+
+if(strpos($msg, "/2post")===0 and $isadmin)
+{
+$campo = explode(" ", $msg);
+$dbcontent[$chatID]["page"] = "post $campo[1]";
+jsonsave();
+$t = array(array(array(
+"text" => " Annulla",
+"callback_data" => "/apostannulla"
+)));
+
+cb_reply($cbid, "Ok!", false, $cbmid, "Ok $nome, invia ora il post globale che vuoi inviare.
+Formattazione: ".$config['parse_mode'], $t);
+
+}
+
+if(strpos($msg, "/apostannulla")===0 and $isadmin)
+{
+cb_reply($cbid, "Ok!", false, $cbmid, "Invio Post annullato");
+$dbcontent[$chatID]["page"] = "";
+jsonsave();
+exit;
+}
+
+if(strpos($dbcontent[$chatID]['page'], "post")===0)
+{
+if($msg)
+{
+//eseguo
+$s = explode(" ",$dbcontent[$chatID]['page']);
+$achi = $s[1];
+sm($chatID, "Post in viaggio verso gli utenti.");
+
+//salvo post in file
+$file = "lastpost.json";
+$f2 = fopen($file, 'w');
+fwrite($f2, $msg);
+fclose($f2);
+
+
+//invio
+foreach ($dbcontent as $usr) {
+if($achi == 1) if($usr["chat_id"] > 0) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
+if($achi == 2) if($usr["chat_id"] < 0) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
+if($achi == 3) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
+}
+
+
+
+}else{
+sm($chatID, "Solo messaggi testuali.");
+}
+}
+
+
+
+//ban unban dal bot
+
+if(strpos($msg, "/ban ")===0 and $isadmin)
+{
+$campo = explode(" ", $msg);
+if (stripos($campo[1], "@")===0) {
+$id = id($campo[1]);
+} else {
+$id = $campo[1];
+}
+$dbcontent[$id]["page"] = "ban";
+jsonsave();
+sm($chatID, "Ho bannato $campo[1] dal bot");
+}
+if(strpos($msg, "/unban ")===0 and $isadmin)
+{
+if (stripos($campo[1], "@")===0) {
+$id = id($campo[1]);
+} else {
+$id = $campo[1];
+}
+$dbcontent["$id"]["page"] = "";
+jsonsave();
+sm($chatID, "Ho bannato $campo[1] dal bot");
+}
+
+	
+} elseif ($config['tipo_db'] == "mysql") {
 if(strpos($msg, "/iscritti")===0 and $isadmin )
 {
+
 $qcp = $db->query("select * from $tabella where not page = 'disable' and not page='group' and chat_id>0");
 $qcg = $db->query("select * from $tabella where not page = 'disable' and chat_id<0");
 $cp = $qcp->rowCount();
@@ -105,7 +235,7 @@ $db->query("update $tabella set page = '' where chat_id = $chatID");
 $db->query("update $tabella set page = 'inviapost' $q");
 while($b = $s->fetch(PDO::FETCH_ASSOC))
 {
-if(sm($b[chat_id], $msg, false, $config['formattazione_messaggi_globali']))
+if(sm($b[chat_id], $msg, false, false, $config['formattazione_messaggi_globali']))
 {
 $db->query("update $tabella set page = '' where chat_id = $b[chat_id]");
 }else{
@@ -159,9 +289,8 @@ $id = $campo[1];
 }
 $db->query("update $tabella set page = '' where chat_id = $id");
 }
-
-
-
+}
+}
 
 
 
