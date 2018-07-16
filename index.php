@@ -1,5 +1,5 @@
 <?php
-echo '<h1 align="center">SilverOSBase v 0.8 </h1>';
+echo '<h1 align="center">SilverOSBase v 0.9 </h1>';
 $token = $_GET['api'];
 $api = $token;
 $idadmin = $_GET['admin'];
