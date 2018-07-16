@@ -17,8 +17,8 @@ $config = array(
 "altervista" => false, //true se usi altervista, false se non lo usi
 "ip" => "localhost", // se non usi altervista metti l'indirizzo del database, di norma localhost se è hostato sullo stesso server
 "user" => "root", //se non usi altervista inserisci il nome utente del DB
-"password" => "ciano", //se non usi altervista inserisci la password di mysql
-"database" => "silver", //se non usi altervista inserisci il nome del database
+"password" => "psw", //se non usi altervista inserisci la password di mysql
+"database" => "sdb", //se non usi altervista inserisci il nome del database
 //TELEGRAM
 "action" => true, //true per mandare azioni come typing... e false per non mandare nulla
 "parse_mode"=> "HTML" ,//Formattazione presefinita messaggio, HTML, Markdown o none
