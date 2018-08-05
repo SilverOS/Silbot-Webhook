@@ -1,5 +1,5 @@
-# SilverOSBase Webhook
-Base per bot telegram che utilizza webhook. Base testata su PHP5 e PHP7,supporta mysql ed è integrata anche la compatibilità con altervista.
+# SilBot Webhook
+Base per bot telegram che utilizza webhook. Base testata su PHP5.6 e PHP7,supporta mysql ed è integrata anche la compatibilità con altervista.
 
 # Requisiti
 - - -
