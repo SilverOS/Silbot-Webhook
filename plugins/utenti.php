@@ -1,5 +1,5 @@
 ﻿<?php
-echo "<br>Plugin Utenti 2.0";
+echo "<br>Plugin Utenti 3.0";
 //iscritti
 if ($config["db"]) {
 	if ($config['tipo_db'] == "json"){
@@ -26,7 +26,7 @@ $iscritti .= "\n   👥Chat Gruppi: $gruppi";
 $iscritti.= "\n\n*👥UTENTI SUI GRUPPI*";
 $iscritti .= "\n 👤Utenti: $usr";
 $iscritti .= "\n 👤Utenti totali: $tot";
-sm($chatID, $iscritti);
+sm($chatID, $iscritti,false,false,"markdown");
 }
 if(strpos($msg, "/post")===0 and $isadmin)
 {
@@ -89,9 +89,9 @@ fclose($f2);
 
 //invio
 foreach ($dbcontent as $usr) {
-if($achi == 1) if($usr["chat_id"] > 0) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
-if($achi == 2) if($usr["chat_id"] < 0) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
-if($achi == 3) sm($usr["chat_id"], $msg, false, false,$config['formattazione_messaggi_globali']) ;
+if($achi == 1) if($usr["chat_id"] > 0) sm($usr["chat_id"], $msg, false, false,$config['parse_mode']) ;
+if($achi == 2) if($usr["chat_id"] < 0) sm($usr["chat_id"], $msg, false, false,$config['parse_mode']) ;
+if($achi == 3) sm($usr["chat_id"], $msg, false, false,$config['parse_mode']) ;
 }
 
 
@@ -161,7 +161,7 @@ $iscritti .= "\n   👥Chat Gruppi: $mcg";
 $iscritti.= "\n\n*👥UTENTI SUI GRUPPI*";
 $iscritti .= "\n 👤Utenti: $gru
 ";
-sm($chatID, $iscritti);
+sm($chatID, $iscritti,false,false,"markdown");
 }
 //post globali
 
@@ -207,7 +207,6 @@ cb_reply($cbid, "Ok!", false, $cbmid, "Invio Post annullato");
 $db->query("update $tabella set page = '' where chat_id = $chatID");
 exit;
 }
-
 if(strpos($u['page'], "post")===0)
 {
 if($msg)
@@ -215,57 +214,29 @@ if($msg)
 //eseguo
 $s = explode(" ",$u['page']);
 $achi = $s[1];
-
+$db->query("update $tabella set page = '' where chat_id = $chatID");
 if($achi == 1) $q = "where chat_id>0 and not page='group'";
 if($achi == 2) $q = "where chat_id<0 and not page='group'";
 if($achi == 3) $q = " where 1 and not page='group'";
-
-sm($chatID, "Post in viaggio verso gli utenti.");
-
-//salvo post in file
-$file = "lastpost.json";
-$f2 = fopen($file, 'w');
-fwrite($f2, $msg);
-fclose($f2);
-
-
-//invio
-$s = $db->query("select * from $tabella $q");
-$db->query("update $tabella set page = '' where chat_id = $chatID");
-$db->query("update $tabella set page = 'inviapost' $q");
-while($b = $s->fetch(PDO::FETCH_ASSOC))
-{
-if(sm($b[chat_id], $msg, false, false, $config['formattazione_messaggi_globali']))
-{
-$db->query("update $tabella set page = '' where chat_id = $b[chat_id]");
-}else{
-$db->query("update $tabella set page = 'disable' where chat_id = $b[chat_id]");
+$query = $db->query("SELECT * FROM $tabella $q");
+$c = $query->rowCount();
+sm($chatID, "Post in viaggio verso $c utenti.");
+$tot = 0;
+foreach ($query as $user) {
+	$tot++;
+	$id = $user["chat_id"];
+	sm($id, $msg);
+	if ($tot > $c) { //Misura di sicurezza, se vi dà problemi togliete questo if.
+		sm($chatID, "Invio completato, post inviato a $tot utenti.");
+		exit;
+	}
 }
-}
-
-
+sm($chatID, "Invio completato, post inviato a $tot utenti.");
 
 }else{
 sm($chatID, "Solo messaggi testuali.");
 }
 }
-
-
-//post out loop
-$text = file_get_contents("lastpost.json");
-$s = $db->query("select * from $tabella where page = 'inviapost'");
-while($b = mysql_fetch_assoc($s))
-{
-$db->query("update $tabella set page = '' where chat_id = $b[chat_id]");
-if(sm($b[chat_id], $msg, false, $config['formattazione_messaggi_globali']))
-{
-$db->query("update $tabella set page = '' where chat_id = $b[chat_id]");
-}else{
-$db->query("update $tabella set page = 'disable' where chat_id = $b[chat_id]");
-}
-}
-
-
 
 //ban unban dal bot
 
