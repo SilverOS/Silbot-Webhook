@@ -1,8 +1,9 @@
 <?php
 if ($msg == "/start") {
-sm($chatID, "Usa:
+sm($chatID, "Silbot v1.0
+Usa:
 /reply per un esempio di tastiera reply
-/inline per un esempio di tastiera inline");
+/inline per un esempio di tastiera inline " . id($username));
 }
 if ($msg == "/reply") {
 $menu[] = array("voce 1");
@@ -20,4 +21,6 @@ array("text" => "Ciao",
 );
 sm($chatID, "Tastiera Inline", $menu, "inline");
 }
+if ($cbdata == "test") {
 cb_reply($cbid, "NOTIFICA TIPO 1", false, $cbmid, "Messaggio Modificato");
+}

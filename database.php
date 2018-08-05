@@ -76,7 +76,7 @@ $db = new PDO("mysql:host=" . $config["ip"] . ";dbname=".$config['database'], $c
 }
 
 $tabella = $userbot;
-if ($chatID) {
+if ($chatID < 0) {
 $q = $db->query("select * from $tabella where chat_id = $chatID");
 if(!$q->rowCount())
 {
