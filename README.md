@@ -8,7 +8,7 @@ Base per bot telegram che utilizza webhook. Base testata su PHP5.6 e PHP7,suppor
 
 # Set Webhook
 - - -
-Per impostare il webhook *semplicemente* si può fare uso del bot telegram @SilverOSwebhookbot, oppute potete farlo *manualmente*, ma ricorda di inserire nel link del webhook i seguenti parametri:
+Per impostare il webhook *semplicemente* si può fare uso del bot telegram @DevToolsForBot , oppute potete farlo *manualmente*, ma ricorda di inserire nel link del webhook i seguenti parametri:
 - api : Token del bot
 - admin : Admin del bot
 - userbot : Username del bot (Necessario se si utilizza mysql)
