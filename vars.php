@@ -2,10 +2,15 @@
 echo "<br />Variabili";
 $isedited = $update["edited_message"];
 $isforwarded = $update["message"]["forward_from"];
+$ischannel = $update["message"]["channel_post"];
 if (!$config["funziona_inoltrati"] && $isforwarded) {
 return;
 }
 if (!$config["funziona_modificati"] && $isedited) {
+return;
+}
+
+if (!$config["funziona_canali"] && $ischannel) {
 return;
 }
 if ($isforwarded && $config["funziona_inoltrati"]) {
@@ -60,10 +65,10 @@ $lingua = $update["callback_query"]["from"]["language_code"];
 if ($update["message"]["reply_to_message"]) {
 $replymsg = $update["message"]["reply_to_message"]["text"];
 $replyid = $update["message"]["reply_to_message"]["message_id"];
-$replyuserid = $update["message"]["reply_to_message"]["id"];
-$replynome = $update["message"]["reply_to_message"]["first_name"];
-$replycognome = $update["message"]["reply_to_message"]["last_name"];
-$replyusername = $update["message"]["reply_to_message"]["username"];
+$replyuserid = $update["message"]["reply_to_message"]["from"]["id"];
+$replynome = $update["message"]["reply_to_message"]["from"]["first_name"];
+$replycognome = $update["message"]["reply_to_message"]["from"]["last_name"];
+$replyusername = $update["message"]["reply_to_message"]["from"]["username"];
 $replyfromnome = $update["message"]["reply_to_message"]["forward_from"]["first_name"];
 $replyfromcognome = $update["message"]["reply_to_message"]["forward_from"]["last_name"];
 $replyfromusername = $update["message"] ["reply_to_message"]["forward_from"]["username"];
