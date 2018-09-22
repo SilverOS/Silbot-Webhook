@@ -1,9 +1,16 @@
 <?php
 if ($msg == "/start") {
-sm($chatID, "Silbot v1.0
+if ($cbdata) {
+cb_reply($cbid, "Ok", false, $cbmid, "Silbot v1.1
 Usa:
 /reply per un esempio di tastiera reply
-/inline per un esempio di tastiera inline " . id($username));
+/inline per un esempio di tastiera inline");
+} else {
+sm($chatID, "Silbot v1.1
+Usa:
+/reply per un esempio di tastiera reply
+/inline per un esempio di tastiera inline");
+}
 }
 if ($msg == "/reply") {
 $menu[] = array("voce 1");
@@ -22,5 +29,9 @@ array("text" => "Ciao",
 sm($chatID, "Tastiera Inline", $menu, "inline");
 }
 if ($cbdata == "test") {
-cb_reply($cbid, "NOTIFICA TIPO 1", false, $cbmid, "Messaggio Modificato");
+$menu[] = array(
+array("text" => "Toena indietro",
+"callback_data" => "/start"),
+);
+cb_reply($cbid, "Ok", false, $cbmid, "Messaggio Modificato",$menu);
 }
