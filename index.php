@@ -1,5 +1,5 @@
 <?php
-echo '<h1 align="center">SilBot v 1.0 </h1>';
+echo '<h1 align="center">SilBot v 1.1 </h1>';
 $token = $_GET['api'];
 $api = $token;
 $idadmin = $_GET['admin'];
@@ -8,6 +8,7 @@ $userbot = $_GET['userbot'];
 $admin = array( //lista admin
 $adminID
 );
+
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 $config = array(
@@ -21,6 +22,8 @@ $config = array(
 "user" => "root" , //se non usi altervista inserisci il nome utente del DB
 "password" => "psw", //se non usi altervista inserisci la password di mysql
 "database" => "db", //se non usi altervista inserisci il nome del database
+//Json
+"jsondbname" => "database.json", //Il nome del file che contiene il database json o il path
 //TELEGRAM
 "action" => false, //true per mandare azioni come typing... e false per non mandare nulla
 "parse_mode"=> "HTML" ,//Formattazione presefinita messaggio, HTML, Markdown o none
@@ -28,7 +31,9 @@ $config = array(
 "tastiera" => "inline" ,//Tastiera preferita, inline per quella inline e reply per la replykeyboard
 "funziona_modificati" => true, //Scegli se far eseguire i messaggi modificati
 "funziona_inoltrati" => false, //Scegli se far eseguire i messaggi inoltrati
+"funziona_canali" => true, //Scegli se far eseguire i messaggi inviati dai canali
 );
+
 if ($config["anti_post_bug"] && $userbot && $config["tipo_db"] == "mysql") {
 	$info = json_decode(file_get_contents("http://api.telegram.org/$api/getMe"),true);
 	if ($info["result"]["username"] != $userbot) {
