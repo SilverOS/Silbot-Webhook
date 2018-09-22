@@ -126,7 +126,7 @@ $id = $campo[1];
 }
 $dbcontent["$id"]["page"] = "";
 jsonsave();
-sm($chatID, "Ho bannato $campo[1] dal bot");
+sm($chatID, "Ho sbannato $campo[1] dal bot");
 }
 
 	
@@ -253,12 +253,15 @@ sm($chatID, "Ho bannato $campo[1] dal bot");
 }
 if(strpos($msg, "/unban ")===0 and $isadmin)
 {
+$campo = explode(" ", $msg);
 if (stripos($campo[1], "@")===0) {
+
 $id = id($campo[1]);
 } else {
 $id = $campo[1];
 }
 $db->query("update $tabella set page = '' where chat_id = $id");
+sm($chatID, "Ho sbannato $campo[1]");
 }
 }
 }
