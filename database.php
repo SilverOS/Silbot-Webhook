@@ -3,8 +3,9 @@
 echo "<br />Database";
 
 
-if($_GET['install'] and $_GET['userbot'])
+if($_GET['install'])
 {
+$tablename = 'nicknamebot'; //put here you nickname of the bot
 if ($config['tipo_db'] == "json") {
 	touch($config["jsondbname"]);
 } elseif ($config['tipo_db'] == "mysql") {
@@ -13,7 +14,7 @@ $url = explode(".",$_SERVER["HTTP_HOST"]);
 $dir = dirname($_SERVER["PHP_SELF"]);
 $dir = substr($dir,1);
 $dbh = new PDO("mysql:host=localhost;dbname=my_".$url[0], $url[0], ""); 
-$dbh->query("CREATE TABLE IF NOT EXISTS ".$_GET['userbot']." (
+$dbh->query("CREATE TABLE IF NOT EXISTS ".$tablename." (
 id int(0) AUTO_INCREMENT,
 chat_id bigint(0),
 username varchar(200),
@@ -22,7 +23,7 @@ PRIMARY KEY (id))");
 echo "<br>HO INSTALLATO IL DATABASE";
 } else {
 $dbh = new PDO("mysql:host=" . $config["ip"] . ";dbname=".$config['database'], $config['user'], $config['password']); 
-$dbh->query("CREATE TABLE IF NOT EXISTS ".$_GET['userbot']." (
+$dbh->query("CREATE TABLE IF NOT EXISTS ".$tablename." (
 id int(0) AUTO_INCREMENT,
 chat_id bigint(0),
 username varchar(200),
