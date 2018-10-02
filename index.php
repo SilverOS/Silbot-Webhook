@@ -40,16 +40,16 @@ if ($config["anti_post_bug"] && $userbot && $config["tipo_db"] == "mysql") {
 		exit;
 	}
 }
-include ("vars.php");
-include("functions.php");
+require ("vars.php");
+require("functions.php");
 if ($config['db']){
-include("database.php");
+require("database.php");
 }
-include("comandi.php");
+require("comandi.php");
 $plugins = scandir("plugins"); unset($plugins[0]); unset($plugins[1]);
 $disabled = array("pluginno.php"); //Qui và la lista dei plugin disabilitati
 foreach($plugins as $plug) {
 	if (!in_array($plug, $disabled)) {
-		include("plugins/$plug");
+		include_once("plugins/$plug");
 		}
 }
