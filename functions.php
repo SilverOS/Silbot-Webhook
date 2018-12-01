@@ -820,28 +820,7 @@ function getChatMember($chatID, $userID)
     );
     return sr("getChatMember", $args);
 }
-if ($config['db']) {
-    if ($config['tipo_db'] == "json") {
-        function username($id)
-        {
-            global $dbcontent;
-            return $dbcontent[$id]['username'];
-        }
-        function id($username)
-        {
-            global $dbcontent;
-            $username = str_replace("@", "", $username);
-            $key      = array_search($username, array_column($dbcontent, "username", "chat_id"));
-            return $key;
-        }
-        function jsonsave()
-        {
-            global $dbcontent;
-            global $config;
-            $f = fopen($config["jsondbname"], "w+");
-            fwrite($f, json_encode($dbcontent, JSON_PRETTY_PRINT));
-        }
-    } elseif ($config['tipo_db'] == "mysql") {
+    if ($config['db']) {
         function id($username)
         {
             global $userbot;
