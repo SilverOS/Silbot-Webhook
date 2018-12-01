@@ -1,5 +1,13 @@
-# SilBot Webhook
-Base per bot telegram che utilizza webhook. Base testata su PHP5.6 e PHP7,supporta mysql ed è integrata anche la compatibilità con altervista.
+# SilBot X
+Versione sperimentale e molto diversa da Silbot, basata più sulla velocità,leggerezza e sicurezza.
+
+# Sicurezza
+Questa versione,essendo basata sulla sicurezza, oltre ad aver reso più sicure e veloci le query ha aggiunto delle impostazioni al config che la rendono più sicura:
+
+1) Filtro per Username del bot, che permette solo ad alcuni bot di fare richieste, bloccando eventuali cloni indesiderati
+2) Blocco per IP, permette di bloccare le richieste non proveienti da ip di Telegram, *NON FUNZIONA CON CLOUDFLARE*
+
+
 
 # Requisiti
 - - -
@@ -10,7 +18,6 @@ Base per bot telegram che utilizza webhook. Base testata su PHP5.6 e PHP7,suppor
 - - -
 Per impostare il webhook *semplicemente* si può fare uso del bot telegram @DevToolsForBot , oppute potete farlo *manualmente*, ma ricorda di inserire nel link del webhook i seguenti parametri:
 - api : Token del bot
-- admin : Admin del bot
 - userbot : Username del bot (Necessario se si utilizza mysql)
 
 Inoltre per installare il database dovrete fare prima una richiesta al bot con i parametri *install* (Dandogli il valore di true) e userbot.
