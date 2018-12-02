@@ -16,26 +16,26 @@ PRIMARY KEY (chat_id))');
     echo "Database installato";
 }
     if ($chatID < 0) {
-        $q = $db->prepare("select * from ? where chat_id = ? LIMIT 1");
-        $q->execute([$tabella,$chatID]);
+        $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+        $q->execute([$chatID]);
         if (!$q->rowCount()) {
-            $db->prepare("insert into ? (chat_id, page, username) values (?, '','?')")->execute([$tabella,$chatID,$username]);
+            $db->prepare("insert into $tabella (chat_id, state, username) values (?, '','?')")->execute([$chatID,$username]);
         }
     }
     if ($userID) {
-        $q = $db->prepare("select * from ? where chat_id = ? LIMIT 1");
-        $q->execute([$tabella,$chatID]);
+        $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+        $q->execute([$chatID]);
+
         if (!$q->rowCount()) {
             if ($userID == $chatID) {
-                $db->prepare("insert into ? (chat_id, state, username) values (?, '','?')")->execute([$tabella,$chatID,$username]);
+                $db->prepare("insert into $tabella (chat_id, state, username) values (?, '','?')")->execute([$chatID,$username]);
             } else {
-                $db->prepare("insert into ? (chat_id, page, username) values (?, 'group', '?')")->execute([$tabella,$chatID,$username]);
+                $db->prepare("insert into $tabella (chat_id, state, username) values (?, 'group', '?')")->execute([$chatID,$username]);
             }
         } else {
             $u = $q->fetch(PDO::FETCH_ASSOC);
-            
             if ($u['state'] == "group" && $chatID > 0) {
-                $db->prepare("update ? set page = '' where chat_id = ? LIMIT 1")->execute([$tabella,$chatID]);
+                $db->prepare("update $tabella set state = '' where chat_id = ? LIMIT 1")->execute([$chatID]);
             }
         }
     }
