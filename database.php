@@ -1,3 +1,4 @@
+
 <?php
 
 echo "<br />Database";
@@ -15,27 +16,30 @@ PRIMARY KEY (chat_id))');
     $install->execute();
     echo "Database installato";
 }
-    if ($chatID < 0) {
-        $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
-        $q->execute([$chatID]);
-        if (!$q->rowCount()) {
-            $db->prepare("insert into $tabella (chat_id, state, username) values (?, '','?')")->execute([$chatID,$username]);
-        }
+if ($chatID < 0) {
+    $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+    $q->execute([$chatID]);
+    if (!$q->rowCount()) {
+        $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, '',?)")->execute([$username]);
     }
-    if ($userID) {
-        $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
-        $q->execute([$chatID]);
+}
+if ($userID) {
+    $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+    $q->execute([$chatID]);
 
-        if (!$q->rowCount()) {
-            if ($userID == $chatID) {
-                $db->prepare("insert into $tabella (chat_id, state, username) values (?, '','?')")->execute([$chatID,$username]);
-            } else {
-                $db->prepare("insert into $tabella (chat_id, state, username) values (?, 'group', '?')")->execute([$chatID,$username]);
-            }
+    if (!$q->rowCount()) {
+        if ($userID == $chatID) {
+            $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, '',?)")->execute([$username]);
         } else {
-            $u = $q->fetch(PDO::FETCH_ASSOC);
+            $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, 'group', ?)")->execute([$username]);
+        }
+    } else {
+        $u = $q->fetch(PDO::FETCH_ASSOC);
             if ($u['state'] == "group" && $chatID > 0) {
                 $db->prepare("update $tabella set state = '' where chat_id = ? LIMIT 1")->execute([$chatID]);
             }
+            if ($u['username'] != $username && $chatID > 0) {
+                $db->prepare("update $tabella set username = ? where chat_id = ? LIMIT 1")->execute([$username,$userID]);
+            }
         }
-    }
+}
