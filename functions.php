@@ -839,4 +839,3 @@ function getChatMember($chatID, $userID)
             return $u['username'];
         }
     }
-}
