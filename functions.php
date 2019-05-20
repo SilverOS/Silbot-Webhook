@@ -60,14 +60,14 @@ function sm($chatID, $msg, $menu = false, $keyboardtype = false, $parse_mode = f
         "text" => $msg,
         "parse_mode" => $parse_mode,
         "reply_to_message_id" => $reply_to_message,
-        "disable_web_page_preview" => false
+        "disable_web_page_preview" => $disablewebpreview
     );
     if ($menu)
         $args['reply_markup'] = $rm;
     if ($config['action']) {
         action($chatID, "typing");
     }
-    sr("sendMessage", $args);
+    return sr("sendMessage", $args);
 }
 function sendMessage()
 {
@@ -386,30 +386,9 @@ function editMessageCaption($chatID, $caption, $msgid, $parse_mode)
 {
     global $token;
     global $config;
-    if (!$keyboardtype && $menu) {
-        $keyboardtype = $config['tastiera'];
-    }
-    if ($keyboardtype == "reply") {
-        $rm = array(
-            'keyboard' => $menu,
-            'resize_keyboard' => true
-        );
-    } elseif ($keyboardtype == "inline") {
-        $rm = array(
-            'inline_keyboard' => $menu
-        );
-    } elseif ($keyboardtype == "nascondi") {
-        $rm = array(
-            'hide_keyboard' => true
-        );
-    }
-    $rm = json_encode($rm);
     
     if (!$parse_mode) {
         $parse_mode = $config['parse_mode'];
-    }
-    if (!$disablewebpreview) {
-        $disablewebpreview = $config['disabilitapreview'];
     }
     $args = array(
         "chat_id" => $chatID,
@@ -417,7 +396,7 @@ function editMessageCaption($chatID, $caption, $msgid, $parse_mode)
         "parse_mode" => $parse_mode,
         "message_id" => $msgid
     );
-    
+    return sr("editMessageCaption",$args);
     
 }
 //sendVoice
@@ -594,7 +573,7 @@ function sl($chatID, $latitude, $longitude, $menu = false, $keyboardtype = false
         "latitude" => $latitude,
         "parse_mode" => $parse_mode,
         "reply_to_message_id" => $reply_to_message,
-        "longitude" => $lungitude,
+        "longitude" => $longitude,
         "live_period" => $live_period
     );
     if ($menu)
@@ -820,34 +799,14 @@ function getChatMember($chatID, $userID)
     );
     return sr("getChatMember", $args);
 }
-if ($config['db']) {
-    if ($config['tipo_db'] == "json") {
-        function username($id)
-        {
-            global $dbcontent;
-            return $dbcontent[$id]['username'];
-        }
-        function id($username)
-        {
-            global $dbcontent;
-            $username = str_replace("@", "", $username);
-            $key      = array_search($username, array_column($dbcontent, "username", "chat_id"));
-            return $key;
-        }
-        function jsonsave()
-        {
-            global $dbcontent;
-            global $config;
-            $f = fopen($config["jsondbname"], "w+");
-            fwrite($f, json_encode($dbcontent, JSON_PRETTY_PRINT));
-        }
-    } elseif ($config['tipo_db'] == "mysql") {
+    if ($config['db']) {
         function id($username)
         {
             global $userbot;
             global $db;
             $username = str_replace("@", "", $username);
-            $q        = $db->query("select * from `$userbot` where username = '" . $username . "'");
+            $q        = $db->prepare("select * from $userbot where username = ?");
+            $q->execute([$username]);
             $u        = $q->fetch(PDO::FETCH_ASSOC);
             return $u['chat_id'];
         }
@@ -855,9 +814,9 @@ if ($config['db']) {
         {
             global $userbot;
             global $db;
-            $q = $db->query("select * from `$userbot` where chat_id = $id");
+            $q = $db->query("select * from $userbot where chat_id = ?");
+            $q->execute([$id]);
             $u = $q->fetch(PDO::FETCH_ASSOC);
             return $u['username'];
         }
     }
-}

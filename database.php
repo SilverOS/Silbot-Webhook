@@ -1,102 +1,45 @@
+
 <?php
 
 echo "<br />Database";
-
-
-if ($_GET['install'] and $_GET['userbot']) {
-    if ($config['tipo_db'] == "json") {
-        touch($config["jsondbname"]);
-    } elseif ($config['tipo_db'] == "mysql") {
-        if ($config['altervista']) {
-            $url = explode(".", $_SERVER["HTTP_HOST"]);
-            $dir = dirname($_SERVER["PHP_SELF"]);
-            $dir = substr($dir, 1);
-            $dbh = new PDO("mysql:host=localhost;dbname=my_" . $url[0], $url[0], "");
-            $dbh->query("CREATE TABLE IF NOT EXISTS " . $_GET['userbot'] . " (
-id int(0) AUTO_INCREMENT,
+if (!isset($config)) {
+    exit;
+}
+$tabella = $userbot;
+$db = new PDO("mysql:host=" . $config["ip"] . ";dbname=" . $config['database'], $config['user'], $config['password']);
+if ($_GET["install"] && isset($config)) {
+    $install = $db->prepare('CREATE TABLE IF NOT EXISTS ' . $tabella . ' (
 chat_id bigint(0),
 username varchar(200),
-page varchar(200),
-PRIMARY KEY (id))");
-            echo "<br>HO INSTALLATO IL DATABASE";
-        } else {
-            $dbh = new PDO("mysql:host=" . $config["ip"] . ";dbname=" . $config['database'], $config['user'], $config['password']);
-            $dbh->query("CREATE TABLE IF NOT EXISTS " . $_GET['userbot'] . " (
-id int(0) AUTO_INCREMENT,
-chat_id bigint(0),
-username varchar(200),
-page varchar(200),
-PRIMARY KEY (id))");
-            echo "<br>HO INSTALLATO IL DATABASE";
-        }
-        
+state varchar(200),
+PRIMARY KEY (chat_id))');
+    $install->execute();
+    echo "Database installato";
+}
+if ($chatID < 0) {
+    $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+    $q->execute([$chatID]);
+    if (!$q->rowCount()) {
+        $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, '',?)")->execute([$usernamechat]);
     }
 }
-if ($config['tipo_db'] == "json") {
-    $dbcontent = json_decode(file_get_contents($config["jsondbname"]), true);
-    if (!in_array($chatID, $dbcontent)) {
-        if ($chatID == $userID) {
-            $dbcontent[$chatID] = array(
-                "chat_id" => $chatID,
-                "username" => "$username",
-                "page" => ""
-            );
+if ($userID) {
+    $q = $db->prepare("select * from $tabella where chat_id = ? LIMIT 1");
+    $q->execute([$chatID]);
+
+    if (!$q->rowCount()) {
+        if ($userID == $chatID) {
+            $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, '',?)")->execute([$username]);
         } else {
-            $dbcontent[$chatID] = array(
-                "chat_id" => $chatID,
-                "username" => "$usernamechat",
-                "page" => ""
-            );
-            if (!in_array($userID, $dbcontent)) {
-                $dbcontent[$userID] = array(
-                    "chat_id" => $userID,
-                    "username" => "$username",
-                    "page" => "group"
-                );
-            }
+            $db->prepare("insert into $tabella (chat_id, state, username) values ($chatID, 'group', ?)")->execute([$username]);
         }
     } else {
-        if ($dbcontent[$chatID]["page"] == "ban") {
-            sm($chatID, "Sei bannato dall'utilizzo del Bot.");
-            exit;
-        }
-    }
-    jsonsave();
-} elseif ($config['tipo_db'] == "mysql") {
-    if ($config['altervista']) {
-        $url = explode(".", $_SERVER["HTTP_HOST"]);
-        $dir = dirname($_SERVER["PHP_SELF"]);
-        $dir = substr($dir, 1);
-        $db  = new PDO("mysql:host=localhost;dbname=my_" . $url[0], $url[0], "");
-    } else {
-        $db = new PDO("mysql:host=" . $config["ip"] . ";dbname=" . $config['database'], $config['user'], $config['password']);
-    }
-    
-    $tabella = $userbot;
-    if ($chatID < 0) {
-        $q = $db->query("select * from $tabella where chat_id = $chatID");
-        if (!$q->rowCount()) {
-            $db->query("insert into `$tabella` (chat_id, page, username) values ($chatID, ''," . '"' . $usernamechat . '"' . ")");
-        }
-    }
-    if ($userID) {
-        $q = $db->query("select * from $tabella where chat_id = $userID");
-        if (!$q->rowCount()) {
-            if ($userID == $chatID) {
-                $db->query("insert into `$tabella` (chat_id, page, username) values ($chatID, ''," . '"' . $username . '"' . ")");
-            } else {
-                $db->query("insert into `$tabella` (chat_id, page, username) values ($userID, 'group'," . '"' . $username . '"' . ")");
+        $u = $q->fetch(PDO::FETCH_ASSOC);
+            if ($u['state'] == "group" && $chatID > 0) {
+                $db->prepare("update $tabella set state = '' where chat_id = ? LIMIT 1")->execute([$chatID]);
             }
-        } else {
-            $u = $q->fetch(PDO::FETCH_ASSOC);
-            
-            if ($u['page'] == "disable") {
-                $db->query("update $tabella set page = '' where chat_id = $chatID");
-            }
-            if ($u['page'] == "ban") {
-                sm($chatID, "Sei bannato dall'utilizzo del Bot.");
-                exit;
+            if ($u['username'] != $username && $chatID > 0) {
+                $db->prepare("update $tabella set username = ? where chat_id = ? LIMIT 1")->execute([$username,$userID]);
             }
         }
-    }
 }
