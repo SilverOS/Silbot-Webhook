@@ -42,7 +42,8 @@ class botApi
                 $reply_markup = ['hide_keyboard' => true];
             }
         }
-        $args = ['chat_id' => $chat_id,
+        $args = [
+            'chat_id' => $chat_id,
             'text' => $text,
             'parse_mode' => $parse_mode,
             'reply_to_message_id' => $reply_to_message_id,
@@ -50,5 +51,38 @@ class botApi
             'disable_web_page_preview' => $disable_web_page_preview,];
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('sendMessage', $args);
+    }
+    function editMessageText ($chat_id,$message_id,$text,$keyboard=false,$keyboard_type=false,$parse_mode=false,$disable_web_page_preview=false) {
+        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
+        if (!$disable_web_page_preview) $disable_web_page_preview = $this->config['disable_web_page_preview'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'text' => $text,
+            'message_id' => $message_id,
+            'parse_mode' => $parse_mode,
+            'disable_web_page_preview' => $disable_web_page_preview,];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageText', $args);
+
+    }
+    function answerCallbackQuery ($callback_query_id,$text=false,$show_alert = false,$url = false,$cache_time = false) {
+        $args = [
+            'callback_query_id' => $callback_query_id,
+            'text' => $text,
+            'show_alert' => $show_alert,
+            'cache_time' => $cache_time
+        ];
+        if ($url) $args['url'] = $url;
+        return $this->sendRequest('answerCallbackQuery',$args);
     }
 }
