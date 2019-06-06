@@ -2,7 +2,8 @@
 if (isset($bot)) {
     if (isset($callback)) {
         if ($callback->data == 'ciao' && isset($user)) {
-            $bot->sendMessage($user->id,'Ciao!');
+            $bot->editMessageText($message->chat->id,$message->message_id,'Ciao!');
+            $r = $bot->answerCallbackQuery($callback->id,'Ok');
         }
     } else {
         if (isset($message->text)) {
