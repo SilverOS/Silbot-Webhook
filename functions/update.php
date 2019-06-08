@@ -8,16 +8,20 @@ class update
     function __construct($update,$token,$config) {
         $this->update = json_decode($update,true);
         $bot = new botApi($token,$config);
-        //$bot->sendMessage(141691961,$update);
         if (isset($this->update['message'])) {
-            $message = new message($this->update['message']);
-            if (isset($message->chat)) $chat = $message->chat;
-            if (isset($message->user)) $user = $message->user;
-            include 'commands.php';
+            $this->type = 'message';
+            $this->message = new message($this->update['message']);
+            if (isset($this->message->chat)) $this->chat = $this->message->chat;
+            if (isset($this->message->user)) $this->user = $this->message->user;
         } elseif (isset($this->update['edited_message'])) {
-            //todo
+            $this->type = 'edited_message';
+            $this->message = new message($this->update['message']);
+            if (isset($this->message->chat)) $this->chat = $this->message->chat;
+            if (isset($this->message->user)) $this->user = $this->message->user;
         } elseif (isset($this->update['channel_post'])) {
-            //todo
+            $this->type = 'channel_post';
+            $this->message = new message($this->update['channel_post']);
+            if (isset($this->message->chat)) $this->chat = $this->message->chat;
         } elseif (isset($this->update['edited_channel_post'])) {
             //todo
         } elseif (isset($this->update['inline_query'])) {
@@ -25,10 +29,11 @@ class update
         } elseif (isset($this->update['chosen_inline_result'])) {
             //todo
         } elseif (isset($this->update['callback_query'])) {
-            $callback = new callback_query($this->update['callback_query']);
-            if (isset($callback->user)) $user = $callback->user;
-            if (isset($callback->message)) $message = $callback->message;
-            include 'commands.php';
+            $this->type = 'callback_query';
+            $this->callback = new callback_query($this->update['callback_query']);
+            if (isset($this->callback->user)) $this->user = $this->callback->user;
+            if (isset($this->callback->message)) $this->message = $this->callback->message;
         }
+        return $this;
     }
 }

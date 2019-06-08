@@ -1,8 +1,11 @@
 <?php
+
 class user
 {
     var $array;
-    function __construct($array) {
+
+    function __construct($array)
+    {
         foreach ($array as $key => $value) {
             $this->$key = $value;
         }
@@ -12,36 +15,65 @@ class user
 class chat
 {
     var $array;
-    function __construct($array) {
+
+    function __construct($array)
+    {
         foreach ($array as $key => $value) {
             $this->$key = $value;
         }
     }
 }
+
 class message
 {
     var $array;
-    function __construct($array) {
+
+    function __construct($array)
+    {
         foreach ($array as $key => $value) {
             if ($key === 'from') {
                 $this->user = new user($value);
             } elseif ($key === 'chat') {
                 $this->chat = new chat($value);
-            } elseif ($key === 'forward_from_chat'){
+            } elseif ($key === 'forward_from_chat') {
                 $this->forward_from_chat = new chat($value);
                 $this->fwchat = $this->forward_from_chat;
-            } elseif ($key === 'forward_from'){
+            } elseif ($key === 'forward_from') {
                 $this->forward_from = new user($value);
                 $this->fwuser = $this->forward_from;
-            } elseif ($key === 'reply_to_message'){
+            } elseif ($key === 'reply_to_message') {
                 $this->reply_to_message = new message($value);
                 $this->reply = $this->reply_to_message;
+            } elseif ($key === 'photo') {
+                $this->photo = new photo($value[count($value) - 1]);
+            } elseif ($key === 'audio') {
+                $this->audio = new audio($value);
+            } elseif ($key === 'voice') {
+                $this->voice = new voice($value);
+            } elseif ($key === 'animation') {
+                $this->animation = new animation($value);
+            } elseif ($key === 'document' && !isset($this->animation)) {
+                $this->document = new document($value);
+            } elseif ($key === 'video') {
+                $this->video = new video($value);
+            } elseif ($key === 'video_note') {
+                $this->video_note = new video_note($value);
+            } elseif ($key === 'contact') {
+                $this->contact = new contact($value);
+            } elseif ($key === 'location') {
+                $this->location = new location($value);
+            } elseif ($key === 'venue') {
+                $this->venue = new venue($value);
+            } elseif ($key === 'poll') {
+                $this->poll = new poll($value);
             } else {
                 $this->$key = $value;
             }
         }
     }
-    function getHtmlText ($text = false,$entities = false) {
+
+    function getHtmlText($text = false, $entities = false)
+    {
         if (!$text) $text = $this->text;
         if (!$entities) $entities = $this->entities;
         if (!isset($text) || !isset($this->entities) || !isset($entities)) {
@@ -49,7 +81,7 @@ class message
         }
         $msg = htmlspecialchars($text);
         $added = 0;
-        foreach($entities as $entity) {
+        foreach ($entities as $entity) {
             if ($entity['type'] == "bold") {
                 $msg = substr_replace($msg, '<b>', $added + $entity['offset'], 0);
                 $msg = substr_replace($msg, '</b>', $added + $entity['offset'] + 3 + $entity['length'], 0);
@@ -75,10 +107,13 @@ class message
         return $msg;
     }
 }
+
 class callback_query
 {
     var $array;
-    function __construct($array) {
+
+    function __construct($array)
+    {
         foreach ($array as $key => $value) {
             if ($key === 'from') {
                 $this->user = new user($value);
@@ -89,4 +124,263 @@ class callback_query
             }
         }
     }
+}
+
+// Media
+
+class photo
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+
+}
+
+class audio
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+
+}
+
+class voice
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+}
+
+class document
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+}
+
+class video
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+
+}
+
+class animation
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+
+}
+
+class video_note
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
+
+}
+
+class contact
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+
+}
+
+class location
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+
+}
+
+class venue
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'venue') {
+                $this->$key = new location ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+
+}
+
+class poll
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'options') {
+                foreach ($value as $option) {
+                    $this->$key->$option = new pollOption ($value);
+                }
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+
+}
+
+class pollOption
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+
+}
+class file
+{
+    var $array;
+    var $bot;
+    function __construct($array,$bot = false)
+    {
+        if (!is_array($array) && $bot) {
+            $array = json_decode($bot->getFile($array),true);
+            $this->bot = $bot;
+        } elseif (!$bot) {
+            return 0;
+        }
+        foreach ($array['result'] as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+    function download ($path = false,$bot = false) {
+        if (!$bot && isset($this->bot)) {
+            $bot = $this->bot;
+        } elseif (!$bot) {
+            return 0;
+        }
+        $content = file_get_contents('https://api.telegram.org/file/'. $bot->token .'/' . $this->file_path);
+        if (!$content) {
+            return false;
+        }
+        if ($path) {
+            return file_put_contents($path,$content);
+        } else {
+            return $content;
+        }
+    }
+
 }

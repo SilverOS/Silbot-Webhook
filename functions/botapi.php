@@ -9,6 +9,7 @@ class botApi
     {
         $this->token = $token;
         $this->config = $config;
+        return $this;
     }
 
     function sendRequest($method, $args = [])
@@ -84,5 +85,11 @@ class botApi
         ];
         if ($url) $args['url'] = $url;
         return $this->sendRequest('answerCallbackQuery',$args);
+    }
+    function getFile ($file_id) {
+        $args = [
+            'file_id' => $file_id,
+        ];
+        return $this->sendRequest('getFile',$args);
     }
 }
