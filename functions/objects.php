@@ -6,8 +6,41 @@ class user
 
     function __construct($array)
     {
+        global $config;
+        global $db;
         foreach ($array as $key => $value) {
             $this->$key = $value;
+        }
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
+            $q->execute([$this->id]);
+            if(!isset($this->username)) $this->username = '';
+            if (!$q->rowCount()) {
+                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,lang,type) VALUES (?,?,?,?)')->execute([$this->id,$this->username,$this->language_code,'user']);
+            } else {
+                $this->dbinfo = $q->fetch(PDO::FETCH_ASSOC);
+                if ($this->dbinfo['username'] != $this->username) {
+                    $db->prepare('UPDATE '. $config['database']['universal_table'] . ' SET username = ? WHERE chat_id = ?')->execute([$this->username,$this->id]);
+                }
+            }
+        }
+    }
+    function db_save($state = '') {
+        global $config;
+        global $db;
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['bot_table'] . ' WHERE chat_id = ?');
+            $q->execute([$this->id]);
+            if (!$q->rowCount()) {
+                $db->prepare('INSERT INTO ' . $config['database']['bot_table'] . ' (chat_id,state) VALUES (?,?)')->execute([$this->id,$state]);
+                return true;
+            } else {
+                $dbinfo = $q->fetch(PDO::FETCH_ASSOC);
+                if ($dbinfo['state'] == 'group' && $state == '') {
+                    $db->prepare('UPDATE '. $config['database']['bot_table'] . ' SET state = ? WHERE chat_id = ?')->execute(['',$this->id]);
+                }
+                return false;
+            }
         }
     }
 }
@@ -18,8 +51,37 @@ class chat
 
     function __construct($array)
     {
+        global $config;
+        global $db;
         foreach ($array as $key => $value) {
             $this->$key = $value;
+        }
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
+            $q->execute([$this->id]);
+            if(!isset($this->username)) $this->username = '';
+            if (!$q->rowCount()) {
+                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,lang,type) VALUES (?,?,?,?)')->execute([$this->id,$this->username,'',$this->type]);
+            } else {
+                $this->dbinfo = $q->fetch(PDO::FETCH_ASSOC);
+                if ($this->dbinfo['username'] != $this->username) {
+                    $db->prepare('UPDATE '. $config['database']['universal_table'] . ' SET username = ? WHERE chat_id = ?')->execute([$this->username,$this->id]);
+                }
+            }
+        }
+    }
+    function db_save($state = '') {
+        global $config;
+        global $db;
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['bot_table'] . ' WHERE chat_id = ?');
+            $q->execute([$this->id]);
+            if (!$q->rowCount()) {
+                $db->prepare('INSERT INTO ' . $config['database']['bot_table'] . ' (chat_id,state) VALUES (?,?)')->execute([$this->id,$state]);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }
@@ -77,7 +139,7 @@ class message
         if (!$text) $text = $this->text;
         if (!$entities) $entities = $this->entities;
         if (!isset($text) || !isset($this->entities) || !isset($entities)) {
-            return false;
+            return $text;
         }
         $msg = htmlspecialchars($text);
         $added = 0;
