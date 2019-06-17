@@ -10,6 +10,8 @@ if (isset($bot)) {
             if ($message->text == '/start') {
                 $keyboard[] = [['text' => 'ciao', 'callback_data' => 'ciao']];
                 $r = $bot->sendMessage($user->id, 'Ciao', $keyboard);
+            } elseif ($message->text == '/photo') {
+                $bot->sendPhoto($chat->id,'http://www.silveros.it/img/logo.png');
             }
         }
     }
