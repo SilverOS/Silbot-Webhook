@@ -35,8 +35,8 @@ class user
                 $db->prepare('INSERT INTO ' . $config['database']['bot_table'] . ' (chat_id,state) VALUES (?,?)')->execute([$this->id,$state]);
                 return true;
             } else {
-                $dbinfo = $q->fetch(PDO::FETCH_ASSOC);
-                if ($dbinfo['state'] == 'group' && $state == '') {
+                $this->db = new DBUser($this->id);
+                if ($this->db->state == 'group' && $state == '') {
                     $db->prepare('UPDATE '. $config['database']['bot_table'] . ' SET state = ? WHERE chat_id = ?')->execute(['',$this->id]);
                 }
                 return false;
@@ -44,7 +44,47 @@ class user
         }
     }
 }
-
+class DBUser {
+    function __construct($id)
+    {
+        global $config;
+        global $db;
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['bot_table'] . ' WHERE chat_id = ?');
+            $q->execute([$id]);
+            if (!$q->rowCount()) {
+                return false;
+            } else {
+                $dbinfo = $q->fetch(PDO::FETCH_ASSOC);
+                foreach ($dbinfo as $column => $value) {
+                    $this->$column = $value;
+                }
+                $this->tgdb = new TGDBUser($id);
+                return false;
+            }
+        }
+    }
+}
+class TGDBUser {
+    function __construct($id)
+    {
+        global $config;
+        global $db;
+        if (isset($config) && $config['database']['active']) {
+            $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
+            $q->execute([$id]);
+            if (!$q->rowCount()) {
+                return false;
+            } else {
+                $dbinfo = $q->fetch(PDO::FETCH_ASSOC);
+                foreach ($dbinfo as $column => $value) {
+                    $this->$column = $value;
+                }
+                return false;
+            }
+        }
+    }
+}
 class chat
 {
     var $array;
@@ -126,47 +166,14 @@ class message
                 $this->location = new location($value);
             } elseif ($key === 'venue') {
                 $this->venue = new venue($value);
+            } elseif ($key === 'sticker') {
+                $this->sticker = new sticker($value);
             } elseif ($key === 'poll') {
                 $this->poll = new poll($value);
             } else {
                 $this->$key = $value;
             }
         }
-    }
-
-    function getHtmlText($text = false, $entities = false)
-    {
-        if (!$text) $text = $this->text;
-        if (!$entities) $entities = $this->entities;
-        if (!isset($text) || !isset($this->entities) || !isset($entities)) {
-            return $text;
-        }
-        $msg = htmlspecialchars($text);
-        $added = 0;
-        foreach ($entities as $entity) {
-            if ($entity['type'] == "bold") {
-                $msg = substr_replace($msg, '<b>', $added + $entity['offset'], 0);
-                $msg = substr_replace($msg, '</b>', $added + $entity['offset'] + 3 + $entity['length'], 0);
-                $added += 7;
-            }
-            if ($entity['type'] == "italic") {
-                $msg = substr_replace($msg, '<i>', $added + $entity['offset'], 0);
-                $msg = substr_replace($msg, '</i>', $added + $entity['offset'] + 3 + $entity['length'], 0);
-                $added += 7;
-            }
-            if ($entity['type'] == "code" || $entity['type'] == "pre") {
-                $msg = substr_replace($msg, '<code>', $added + $entity['offset'], 0);
-                $msg = substr_replace($msg, '</code>', $added + $entity['offset'] + 6 + $entity['length'], 0);
-                $added += 13;
-            }
-            if ($entity['type'] == "text_link") {
-                $ins = "<a href='$entity[url]'>";
-                $msg = substr_replace($msg, $ins, $added + $entity['offset'], 0);
-                $msg = substr_replace($msg, '</a>', $added + $entity['offset'] + strlen($ins) + $entity['length'], 0);
-                $added += strlen($ins) + 4;
-            }
-        }
-        return $msg;
     }
 }
 
@@ -208,7 +215,28 @@ class photo
     }
 
 }
+class sticker
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+        return $this;
+    }
+    function download ($bot,$path = false) {
+        $file = new file($this->file_id,$bot);
+        if ($file) {
+            return $file->download($path);
+        }
+    }
 
+}
 class audio
 {
     var $array;

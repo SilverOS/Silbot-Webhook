@@ -253,6 +253,27 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('sendVideoNote', $args);
     }
+    function sendSticker ($chat_id,$sticker,$keyboard = false,$keyboard_type = false,$reply_to_message_id = false,$disable_notification = false) {
+        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'sticker' => $sticker,
+            'reply_to_message_id' => $reply_to_message_id,
+            'disable_notification' => $disable_notification,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('sendSticker',$args);
+    }
     function sendLocation ($chat_id,$longitude,$latitude,$keyboard = false,$live_period = false,$keyboard_type = false,$parse_mode=false,$reply_to_message_id = false,$disable_notification = false) {
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
         if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
@@ -323,27 +344,6 @@ class botApi
         ];
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('sendPoll', $args);
-    }
-    function sendSticker ($chat_id,$sticker,$keyboard = false,$keyboard_type = false,$reply_to_message_id = false,$disable_notification = false) {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
-        if ($keyboard) {
-            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
-            if ($keyboard_type === 'inline') {
-                $reply_markup = ['inline_keyboard' => $keyboard];
-            } elseif ($keyboard_type === 'reply') {
-                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
-            } elseif ($keyboard_type === 'hide') {
-                $reply_markup = ['hide_keyboard' => true];
-            }
-        }
-        $args = [
-            'chat_id' => $chat_id,
-            'sticker' => $sticker,
-            'reply_to_message_id' => $reply_to_message_id,
-            'disable_notification' => $disable_notification,
-        ];
-        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('sendSticker',$args);
     }
     function sendChatAction ($chat_id,$action) {
         $args = [
