@@ -44,9 +44,9 @@ class update
             if (isset($this->message->chat)) $this->chat = $this->message->chat;
             $this->chat->db_save();
         } elseif (isset($this->update['inline_query'])) {
-            //todo
-        } elseif (isset($this->update['chosen_inline_result'])) {
-            //todo
+            $this->type = 'inline_query';
+            $this->inline_query = new inline_query($this->update['inline_query']);
+            if (isset($this->inline_query->user)) $this->user = $this->inline_query->user;
         } elseif (isset($this->update['callback_query'])) {
             $this->type = 'callback_query';
             $this->callback = new callback_query($this->update['callback_query']);

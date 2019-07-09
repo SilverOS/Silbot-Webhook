@@ -358,4 +358,16 @@ class botApi
         ];
         return $this->sendRequest('getFile',$args);
     }
+    function answerInlineQuery ($inline_query_id,$results,$switch_pm_text=false,$switch_pm_parameter=false,$cache_time=300,$is_personal=true,$next_offset=false) {
+        $args = [
+            'inline_query_id' => $inline_query_id,
+            'results' => json_encode($results),
+            'cache_time' => $cache_time,
+            'is_personal' => $is_personal,
+        ];
+        if ($switch_pm_text) $args['switch_pm_text'] = $switch_pm_text;
+        if ($switch_pm_parameter) $args['switch_pm_parameter'] = $switch_pm_parameter;
+        if ($next_offset) $args['next_offset'] = $next_offset;
+        return $this->sendRequest('answerInlineQuery',$args);
+    }
 }

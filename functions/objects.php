@@ -194,7 +194,19 @@ class callback_query
         }
     }
 }
-
+class inline_query
+{
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            if ($key === 'from') {
+                $this->user = new user($value);
+            } else {
+                $this->$key = $value;
+            }
+        }
+    }
+}
 // Media
 
 class photo
