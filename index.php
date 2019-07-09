@@ -1,10 +1,9 @@
 <?php
 isset($_GET['token']) ? $token = 'bot' . $_GET['token'] : $token = false;
-
 require 'config.php';
+require 'functions/update.php';
 $bot = new botApi($token,$config);
 $update = new update(file_get_contents('php://input'), $token, $config);
-//$bot->sendMessage(141691961,json_encode($update->update,JSON_PRETTY_PRINT));
 if (isset($update->message)) {
     $message = $update->message;
     if (isset($message->photo)) $photo = $message->photo;
@@ -22,4 +21,25 @@ if (isset($update->message)) {
 if (isset($update->chat)) $chat = $update->chat;
 if (isset($update->user)) $user = $update->user;
 if (isset($update->callback)) $callback = $update->callback;
+if (isset($update->inline_query)) $inline = $update->inline_query;
+
+//Plugins
+if ($config['plugins']['active']) {
+    $startpls = scandir('plugins/start');
+    foreach ($startpls as $pl) {
+        if (!in_array($pl,$config['plugins']['start_disabled'])) {
+            include('plugins/start/' . $pl);
+        }
+    }
+}
+
 include 'commands.php';
+
+if ($config['plugins']['active']) {
+    $startpls = scandir('plugins/end');
+    foreach ($startpls as $pl) {
+        if (!in_array($pl,$config['plugins']['end_disabled'])) {
+            include('plugins/end/' . $pl);
+        }
+    }
+}
