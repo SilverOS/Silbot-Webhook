@@ -24,7 +24,7 @@ class update
             }
         } elseif (isset($this->update['edited_message'])) {
             $this->type = 'edited_message';
-            $this->message = new message($this->update['message']);
+            $this->message = new message($this->update['edited_message']);
             if (isset($this->message->chat)) $this->chat = $this->message->chat;
             if (isset($this->message->user)) $this->user = $this->message->user;
             $this->chat->db_save();
