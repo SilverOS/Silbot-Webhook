@@ -28,6 +28,8 @@ In the <code>config.php</code> file you will find an array, $config, where you c
 To use this you have to set database->active on true and insert your credentials in the config. After that are asked the names of two tables:
 - universal_table => Created to work with more than one bot, there will be saved all the users and chats the bot see with Telegram information, even with forwarded messages or reply. The table contains 4 coloumns: <code>chat_id,username,lang,type</code>
 - bot_table => Where the bot's users are saved, by default it only contains two coloumns: <code>chat_id, state</code>. This is made to do stuff with the code.
+
+To install the database you need to do a GET request to the webhook url with the parameter <code>install</code> 
 - - -
 # Plugins
 
