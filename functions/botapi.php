@@ -89,7 +89,7 @@ class botApi
         if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
         $args = [
             'chat_id' => $chat_id,
-            'from_char_id' => $from_chat_id,
+            'from_chat_id' => $from_chat_id,
             'message_id' => $message_id,
             'disabla_norification' => $disable_notification,
         ];
