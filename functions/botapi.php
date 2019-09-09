@@ -370,4 +370,11 @@ class botApi
         if ($next_offset) $args['next_offset'] = $next_offset;
         return $this->sendRequest('answerInlineQuery',$args);
     }
+    function deleteMessage ($chat_id,$message_id) {
+        $args = [
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+        ];
+        return $this->sendRequest('deleteMessage',$args);
+    }
 }
