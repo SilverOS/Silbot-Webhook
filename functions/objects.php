@@ -304,6 +304,15 @@ class callback_query
             }
         }
     }
+    function answer ($text=false,$show_alert = false,$url = false,$cache_time = false,$botObject=false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->answerCallbackQuery($this->id,$text,$show_alert,$url,$cache_time);
+    }
 }
 class response {
     var $array;
