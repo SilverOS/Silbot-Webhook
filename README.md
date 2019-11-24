@@ -1,4 +1,4 @@
-# SilBot 1.2
+# SilBot 1.3
 
 A new version based on OOP programming in PHP 7 with MySQL integration.
 - - -
