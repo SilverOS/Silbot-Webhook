@@ -59,7 +59,7 @@ class user
         } else {
             return false;
         }
-        $admins = json_decode($botObject->getChatAdministrators($chat_id,$this->id,'raw'),true)['result'];
+        $admins = json_decode($botObject->getChatAdministrators($chat_id,'raw'),true)['result'];
         foreach ($admins as $admin) {
             if ($admin['user']['id'] == $this->id) {
                 return true;
@@ -74,7 +74,7 @@ class user
         } else {
             return false;
         }
-        $result = $botObject->getChatAdministrators($chat_id,$this->id,'object');
+        $result = $botObject->getChatMember($chat_id,$this->id,'object');
         if (!$result->ok || !isset($result->status)) {
             return false;
         } else {

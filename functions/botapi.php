@@ -388,11 +388,11 @@ class botApi
         ];
         return $this->sendRequest('getChat',$args);
     }
-    function getChatAdministrators($chat_id) {
+    function getChatAdministrators($chat_id,$response_type) {
         $args = [
             'chat_id' => $chat_id,
         ];
-        return $this->sendRequest('getChatAdministrators',$args);
+        return $this->sendRequest('getChatAdministrators',$args,$response_type);
     }
     function getChatMembersCount($chat_id) {
         $args = [
@@ -406,11 +406,11 @@ class botApi
         ];
         return json_decode($this->sendRequest('exportChatInviteLink',$args,'raw'),true)['result'];
     }
-    function getChatMember($chat_id,$user_id) {
+    function getChatMember($chat_id,$user_id,$response_type) {
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
         ];
-        return $this->sendRequest('getChatMember',$args);
+        return $this->sendRequest('getChatMember',$args,$response_type);
     }
 }
