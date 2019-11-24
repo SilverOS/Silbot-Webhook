@@ -43,6 +43,48 @@ class user
             }
         }
     }
+    function getChatMember($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->getChatMember($chat_id,$this->id);
+    }
+    function isAdmin($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $admins = json_decode($botObject->getChatAdministrators($chat_id,$this->id,'raw'),true)['result'];
+        foreach ($admins as $admin) {
+            if ($admin['user']['id'] == $this->id) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function isMember($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $result = $botObject->getChatAdministrators($chat_id,$this->id,'object');
+        if (!$result->ok || !isset($result->status)) {
+            return false;
+        } else {
+            if ($result->status == 'left') {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
 }
 class DBUser {
     function __construct($id)
@@ -63,6 +105,12 @@ class DBUser {
                 return false;
             }
         }
+    }
+    function setColoumn ($column,$value) {
+        global $db;
+        global $config;
+        $q = $db->prepare('UPDATE ' . $config['database']['bot_table'] . ' SET ' . $column .' = ? WHERE chat_id = ?');
+        $q->execute([$value,$this->chat_id]);
     }
 }
 class TGDBUser {
@@ -124,6 +172,51 @@ class chat
             }
         }
     }
+    function getChat($botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->getChat($this->id);
+    }
+    function getChatMembersCount($botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->getChatMembersCount($this->id);
+    }
+    function getChatMember($user_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->getChatMember($this->id,$user_id);
+    }
+    function getChatAdministrators($botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->getChatAdministrators($this->id);
+    }
+    function exportChatInviteLink($botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->exportChatInviteLink($this->id);
+    }
 }
 
 class message
@@ -135,6 +228,7 @@ class message
         foreach ($array as $key => $value) {
             if ($key === 'from') {
                 $this->user = new user($value);
+                $this->from = $this->user;
             } elseif ($key === 'chat') {
                 $this->chat = new chat($value);
             } elseif ($key === 'forward_from_chat') {
@@ -175,8 +269,25 @@ class message
             }
         }
     }
+    function forwardMessage ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
+    function deleteMessage ($botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->deleteMessage($this->chat_id,$this->message_id);
+    }
 }
-
 class callback_query
 {
     var $array;
@@ -191,6 +302,28 @@ class callback_query
             } else {
                 $this->$key = $value;
             }
+        }
+    }
+}
+class response {
+    var $array;
+    function __construct($array)
+    {
+        if ($array['ok']) {
+            $this->ok = true;
+            $array = $array['result'];
+            foreach ($array as $key => $value) {
+                if ($key === 'from') {
+                    $this->user = new user($value);
+                } elseif ($key === 'message') {
+                    $this->message = new message($value);
+                } else {
+                    $this->$key = $value;
+                }
+            }
+        } else {
+            $this->ok = false;
+            return false;
         }
     }
 }
@@ -225,6 +358,15 @@ class photo
             return $file->download($path);
         }
     }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 
 }
 class sticker
@@ -247,6 +389,15 @@ class sticker
             return $file->download($path);
         }
     }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 
 }
 class audio
@@ -264,6 +415,15 @@ class audio
         if ($file) {
             return $file->download($path);
         }
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -283,6 +443,15 @@ class voice
         if ($file) {
             return $file->download($path);
         }
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 }
 
@@ -306,6 +475,15 @@ class document
             return $file->download($path);
         }
     }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 }
 
 class video
@@ -327,6 +505,15 @@ class video
         if ($file) {
             return $file->download($path);
         }
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -351,6 +538,15 @@ class animation
             return $file->download($path);
         }
     }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 
 }
 
@@ -374,6 +570,15 @@ class video_note
             return $file->download($path);
         }
     }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 
 }
 
@@ -387,7 +592,15 @@ class contact
         }
         return $this;
     }
-
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+    }
 }
 
 class location
@@ -399,6 +612,15 @@ class location
             $this->$key = $value;
         }
         return $this;
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -416,6 +638,15 @@ class venue
             }
         }
         return $this;
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -435,6 +666,15 @@ class poll
             }
         }
         return $this;
+    }
+    function forward ($chat_id,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }

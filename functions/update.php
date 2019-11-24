@@ -10,7 +10,6 @@ class update
     {
         $this->update = json_decode($update, true);
         $bot = new botApi($token, $config);
-        //$bot->sendMessage(141691961,$update);
         if (isset($this->update['message'])) {
             $this->type = 'message';
             $this->message = new message($this->update['message']);

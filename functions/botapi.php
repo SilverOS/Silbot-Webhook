@@ -12,7 +12,7 @@ class botApi
         return $this;
     }
 
-    function sendRequest($method, $args = [])
+    function sendRequest($method, $args = [], $response_type = false)
     {
         $args = http_build_query($args);
         $request = curl_init('https://api.telegram.org/' . $this->token . '/' . $method);
@@ -23,9 +23,14 @@ class botApi
             CURLOPT_POST => 1,
             CURLOPT_POSTFIELDS => $args
         ));
+        curl_setopt($request, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
         $result = curl_exec($request);
         curl_close($request);
-        return $result;
+        if (($this->config['object_response'] && !$response_type) || $response_type == "object") {
+            return new response(json_decode($result,true));
+        } else {
+            return $result;
+        }
     }
 
     function sendMessage($chat_id, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false, $disable_web_page_preview = false)
@@ -85,7 +90,7 @@ class botApi
         if ($url) $args['url'] = $url;
         return $this->sendRequest('answerCallbackQuery',$args);
     }
-    function forwardMessage ($chat_id,$from_chat_id,$message_id,$disable_notification) {
+    function forwardMessage ($chat_id,$from_chat_id,$message_id,$disable_notification=false) {
         if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
         $args = [
             'chat_id' => $chat_id,
@@ -376,5 +381,36 @@ class botApi
             'message_id' => $message_id,
         ];
         return $this->sendRequest('deleteMessage',$args);
+    }
+    function getChat($chat_id) {
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return $this->sendRequest('getChat',$args);
+    }
+    function getChatAdministrators($chat_id) {
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return $this->sendRequest('getChatAdministrators',$args);
+    }
+    function getChatMembersCount($chat_id) {
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return json_decode($this->sendRequest('getChatMembersCount',$args,'raw'),true)['result'];
+    }
+    function exportChatInviteLink($chat_id) {
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return json_decode($this->sendRequest('exportChatInviteLink',$args,'raw'),true)['result'];
+    }
+    function getChatMember($chat_id,$user_id) {
+        $args = [
+            'chat_id' => $chat_id,
+            'user_id' => $user_id,
+        ];
+        return $this->sendRequest('getChatMember',$args);
     }
 }
