@@ -106,7 +106,7 @@ class DBUser {
             }
         }
     }
-    function setColoumn ($column,$value) {
+    function setColumn ($column,$value) {
         global $db;
         global $config;
         $q = $db->prepare('UPDATE ' . $config['database']['bot_table'] . ' SET ' . $column .' = ? WHERE chat_id = ?');
