@@ -297,6 +297,7 @@ class callback_query
         foreach ($array as $key => $value) {
             if ($key === 'from') {
                 $this->user = new user($value);
+                $this->from = $this->user;
             } elseif ($key === 'message') {
                 $this->message = new message($value);
             } else {
