@@ -368,15 +368,6 @@ class photo
             return $file->download($path);
         }
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 
 }
 class sticker
@@ -399,15 +390,6 @@ class sticker
             return $file->download($path);
         }
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 
 }
 class audio
@@ -425,15 +407,6 @@ class audio
         if ($file) {
             return $file->download($path);
         }
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -453,15 +426,6 @@ class voice
         if ($file) {
             return $file->download($path);
         }
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 }
 
@@ -485,15 +449,6 @@ class document
             return $file->download($path);
         }
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 }
 
 class video
@@ -515,15 +470,6 @@ class video
         if ($file) {
             return $file->download($path);
         }
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -548,15 +494,6 @@ class animation
             return $file->download($path);
         }
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 
 }
 
@@ -580,15 +517,6 @@ class video_note
             return $file->download($path);
         }
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 
 }
 
@@ -602,15 +530,6 @@ class contact
         }
         return $this;
     }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
-    }
 }
 
 class location
@@ -622,15 +541,6 @@ class location
             $this->$key = $value;
         }
         return $this;
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -648,15 +558,6 @@ class venue
             }
         }
         return $this;
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
@@ -676,15 +577,6 @@ class poll
             }
         }
         return $this;
-    }
-    function forwardMessage($chat_id,$botObject = false) {
-        global $bot;
-        if (!$botObject && isset($bot)) {
-            $botObject = $bot;
-        } else {
-            return false;
-        }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
     }
 
 }
