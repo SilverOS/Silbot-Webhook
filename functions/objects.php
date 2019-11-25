@@ -368,7 +368,7 @@ class photo
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -399,7 +399,7 @@ class sticker
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -426,7 +426,7 @@ class audio
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -454,7 +454,7 @@ class voice
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -485,7 +485,7 @@ class document
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -516,7 +516,7 @@ class video
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -548,7 +548,7 @@ class animation
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -580,7 +580,7 @@ class video_note
             return $file->download($path);
         }
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -602,7 +602,7 @@ class contact
         }
         return $this;
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -623,7 +623,7 @@ class location
         }
         return $this;
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -649,7 +649,7 @@ class venue
         }
         return $this;
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -677,7 +677,7 @@ class poll
         }
         return $this;
     }
-    function forward ($chat_id,$botObject = false) {
+    function forwardMessage($chat_id,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
