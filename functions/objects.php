@@ -362,8 +362,13 @@ class photo
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -384,8 +389,13 @@ class sticker
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -402,8 +412,13 @@ class audio
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -421,8 +436,13 @@ class voice
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -443,8 +463,13 @@ class document
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -465,8 +490,13 @@ class video
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -488,8 +518,13 @@ class animation
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -511,8 +546,13 @@ class video_note
         }
         return $this;
     }
-    function download ($bot,$path = false) {
-        $file = new file($this->file_id,$bot);
+    function download ($path = false,$botObject = false) {
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
+        $file = new file($this->file_id,$botObject);
         if ($file) {
             return $file->download($path);
         }
@@ -597,19 +637,26 @@ class file
 {
     var $array;
     var $bot;
-    function __construct($array,$bot = false)
+    function __construct($array,$botObject = false)
     {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } else {
+            return false;
+        }
         if (!is_array($array) && $bot) {
-            $array = json_decode($bot->getFile($array),true);
-            $this->bot = $bot;
+            $array = json_decode($botObject->getFile($array),true);
+            $this->bot = $botObject;
         } elseif (!$bot) {
-            return 0;
+            return false;
         }
         foreach ($array['result'] as $key => $value) {
             $this->$key = $value;
         }
         return $this;
     }
+
     function download ($path = false,$bot = false) {
         if (!$bot && isset($this->bot)) {
             $bot = $this->bot;
