@@ -2,6 +2,10 @@
 
 A new version based on OOP programming in PHP 7 with MySQL integration.
 - - -
+# Documentation
+ 
+You can read the full documentation for this framework on https://github.com/SilverOS/Silbot-Webhook/wiki.
+- - -
 # Webhook
 
 To set the bot's webhook you have to do a setWebhook request to the botAPI using this format:
