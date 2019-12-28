@@ -11,16 +11,22 @@ class user
         foreach ($array as $key => $value) {
             $this->$key = $value;
         }
+        isset($this->last_name) ? $this->name = $this->first_name . ' ' . $this->last_name : $this->name = $this->first_name;
+        $this->htmlmention = '<a href=tg://user?id="'.$this->id.'">'.$this->name.'</a>';
+        $this->markdownmention = '[' . $this->name .'](tg://user?id='.$this->id.')';
         if (isset($config) && $config['database']['active']) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
             $q->execute([$this->id]);
             if(!isset($this->username)) $this->username = '';
             if (!$q->rowCount()) {
-                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,lang,type) VALUES (?,?,?,?)')->execute([$this->id,$this->username,$this->language_code,'user']);
+                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,name,lang,type) VALUES (?,?,?,?,?)')->execute([$this->id,$this->username,$this->name,$this->language_code,'user']);
             } else {
                 $this->dbinfo = $q->fetch(PDO::FETCH_ASSOC);
                 if ($this->dbinfo['username'] != $this->username) {
                     $db->prepare('UPDATE '. $config['database']['universal_table'] . ' SET username = ? WHERE chat_id = ?')->execute([$this->username,$this->id]);
+                }
+                if ($this->dbinfo['name'] != $this->name) {
+                    $db->prepare('UPDATE '. $config['database']['universal_table'] . ' SET name = ? WHERE chat_id = ?')->execute([$this->name,$this->id]);
                 }
             }
         }
@@ -144,12 +150,17 @@ class chat
         foreach ($array as $key => $value) {
             $this->$key = $value;
         }
+        if (isset($this->title)) {
+            $this->name = $this->title;
+        } else {
+            isset($this->last_name) ? $this->name = $this->first_name . ' ' . $this->last_name : $this->name = $this->first_name;
+        }
         if (isset($config) && $config['database']['active']) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
             $q->execute([$this->id]);
             if(!isset($this->username)) $this->username = '';
             if (!$q->rowCount()) {
-                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,lang,type) VALUES (?,?,?,?)')->execute([$this->id,$this->username,'',$this->type]);
+                $db->prepare('INSERT INTO ' . $config['database']['universal_table'] . ' (chat_id,username,name,lang,type) VALUES (?,?,?,?,?)')->execute([$this->id,$this->username,$this->name,'',$this->type]);
             } else {
                 $this->dbinfo = $q->fetch(PDO::FETCH_ASSOC);
                 if ($this->dbinfo['username'] != $this->username) {
@@ -276,7 +287,7 @@ class message
         } else {
             return false;
         }
-        return $botObject->forwardMessage($chat_id,$this->chat_id,$this->message_id);
+        return $botObject->forwardMessage($chat_id,$this->chat->id,$this->message_id);
     }
     function deleteMessage ($botObject = false) {
         global $bot;
@@ -285,7 +296,7 @@ class message
         } else {
             return false;
         }
-        return $botObject->deleteMessage($this->chat_id,$this->message_id);
+        return $botObject->deleteMessage($this->chat->id,$this->message_id);
     }
 }
 class callback_query
@@ -305,7 +316,7 @@ class callback_query
             }
         }
     }
-    function answer ($text=false,$show_alert = false,$url = false,$cache_time = false,$botObject=false) {
+    function answer ($text='',$show_alert = false,$url = false,$cache_time = false,$botObject=false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -319,6 +330,9 @@ class response {
     var $array;
     function __construct($array)
     {
+        if (!is_array($array) && is_string($array)) {
+            $array = json_decode($array,true);
+        }
         if ($array['ok']) {
             $this->ok = true;
             $array = $array['result'];
@@ -333,6 +347,11 @@ class response {
             }
         } else {
             $this->ok = false;
+            foreach ($array as $key => $value) {
+                if ($key === 'from') {
+                    $this->$key = $value;
+                }
+            }
             return false;
         }
     }
@@ -475,7 +494,6 @@ class document
         }
     }
 }
-
 class video
 {
     var $array;

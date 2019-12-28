@@ -7,6 +7,7 @@ $db = new PDO("mysql:host=" . $config['database']['ip'] . ";dbname=" . $config['
 if (isset($_GET['install'])) {
     $install = $db->prepare('CREATE TABLE IF NOT EXISTS ' . $config['database']['universal_table'] . ' (
 chat_id bigint(0),
+name varchar(200) CHARACTER SET utf8,
 username varchar(50),
 lang varchar(10),
 type varchar(10),

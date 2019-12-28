@@ -26,7 +26,7 @@ $config = [
     'object_response' => false,
     'disable_web_page_preview' => false,
 ];
-if ($config['token_whitelist']['enables']) {
+if ($config['token_whitelist']['enabled']) {
     if (!in_array($token,$config['token_whitelist']['tokens'])) {
         exit;
     }

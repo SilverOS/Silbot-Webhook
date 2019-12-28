@@ -39,7 +39,7 @@ if (isset($update->inline_query)) $inline = $update->inline_query;
 
 //Plugins
 if ($config['plugins']['active']) {
-    $startpls = scandir('plugins/start');
+    $startpls = array_diff(scandir('plugins/start'),['.', '..']);
     foreach ($startpls as $pl) {
         if (!in_array($pl,$config['plugins']['start_disabled'])) {
             include('plugins/start/' . $pl);
@@ -50,8 +50,8 @@ if ($config['plugins']['active']) {
 include 'commands.php';
 
 if ($config['plugins']['active']) {
-    $startpls = scandir('plugins/end');
-    foreach ($startpls as $pl) {
+    $endpls = array_diff(scandir('plugins/end'),['.', '..']);
+    foreach ($endpls as $pl) {
         if (!in_array($pl,$config['plugins']['end_disabled'])) {
             include('plugins/end/' . $pl);
         }
