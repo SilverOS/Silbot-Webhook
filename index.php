@@ -36,6 +36,7 @@ if (isset($update->chat)) $chat = $update->chat;
 if (isset($update->user)) $user = $update->user;
 if (isset($update->callback)) $callback = $update->callback;
 if (isset($update->inline_query)) $inline = $update->inline_query;
+if (isset($update->callback)) $callback = $update->callback;
 
 //Plugins
 if ($config['plugins']['active']) {

@@ -12,7 +12,7 @@ class user
             $this->$key = $value;
         }
         isset($this->last_name) ? $this->name = $this->first_name . ' ' . $this->last_name : $this->name = $this->first_name;
-        $this->htmlmention = '<a href=tg://user?id="'.$this->id.'">'.$this->name.'</a>';
+        $this->htmlmention = '<a href="tg://user?id='.$this->id.'">'.$this->name.'</a>';
         $this->markdownmention = '[' . $this->name .'](tg://user?id='.$this->id.')';
         if (isset($config) && $config['database']['active']) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
@@ -49,7 +49,12 @@ class user
             }
         }
     }
-    function getChatMember($chat_id,$botObject = false) {
+    function getChatMember($chat,$botObject = false) {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -58,12 +63,17 @@ class user
         }
         return $botObject->getChatMember($chat_id,$this->id);
     }
-    function isAdmin($chat_id,$botObject = false) {
+    function isAdmin($chat,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
         } else {
             return false;
+        }
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
         }
         $admins = json_decode($botObject->getChatAdministrators($chat_id,'raw'),true)['result'];
         foreach ($admins as $admin) {
@@ -73,12 +83,17 @@ class user
         }
         return false;
     }
-    function isMember($chat_id,$botObject = false) {
+    function isMember($chat,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
         } else {
             return false;
+        }
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
         }
         $result = $botObject->getChatMember($chat_id,$this->id,'object');
         if (!$result->ok || !isset($result->status)) {
@@ -127,6 +142,8 @@ class TGDBUser {
         if (isset($config) && $config['database']['active']) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
             $q->execute([$id]);
+            $this->htmlmention = '<a href="tg://user?id='.$this->chat_id.'">'.$this->name.'</a>';
+            $this->markdownmention = '[' . $this->name .'](tg://user?id='.$this->chat_id.')';
             if (!$q->rowCount()) {
                 return false;
             } else {
@@ -137,6 +154,12 @@ class TGDBUser {
                 return false;
             }
         }
+    }
+    function setColumn ($column,$value) {
+        global $db;
+        global $config;
+        $q = $db->prepare('UPDATE ' . $config['database']['universal_table'] . ' SET ' . $column .' = ? WHERE chat_id = ?');
+        $q->execute([$value,$this->chat_id]);
     }
 }
 class chat
@@ -179,6 +202,7 @@ class chat
                 $db->prepare('INSERT INTO ' . $config['database']['bot_table'] . ' (chat_id,state) VALUES (?,?)')->execute([$this->id,$state]);
                 return true;
             } else {
+                $this->db = new DBUser($this->id);
                 return false;
             }
         }
@@ -201,7 +225,12 @@ class chat
         }
         return $botObject->getChatMembersCount($this->id);
     }
-    function getChatMember($user_id,$botObject = false) {
+    function getChatMember($user,$botObject = false) {
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
@@ -280,12 +309,17 @@ class message
             }
         }
     }
-    function forwardMessage ($chat_id,$botObject = false) {
+    function forwardMessage ($chat,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
         } else {
             return false;
+        }
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
         }
         return $botObject->forwardMessage($chat_id,$this->chat->id,$this->message_id);
     }
@@ -297,6 +331,20 @@ class message
             return false;
         }
         return $botObject->deleteMessage($this->chat->id,$this->message_id);
+    }
+    function toHTML () {
+        if (isset($this->text)) {
+            $text = $this->text;
+        } elseif (isset($this->caption)) {
+            $text = $this->caption;
+        } else {
+            return false;
+        }
+        if (!isset($this->entities)) {
+            return $text;
+        }
+        $entityParser = new entityParser();
+        return $entityParser->entitiesToHtml($text,$this->entities);
     }
 }
 class callback_query
@@ -331,10 +379,12 @@ class response {
     function __construct($array)
     {
         if (!is_array($array) && is_string($array)) {
+            $this->raw = $array;
             $array = json_decode($array,true);
         }
         if ($array['ok']) {
             $this->ok = true;
+            $this->raw = json_encode($array);
             $array = $array['result'];
             foreach ($array as $key => $value) {
                 if ($key === 'from') {
@@ -382,9 +432,10 @@ class photo
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -409,9 +460,10 @@ class sticker
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -432,9 +484,10 @@ class audio
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -456,9 +509,10 @@ class voice
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -483,9 +537,10 @@ class document
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -509,9 +564,10 @@ class video
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -537,9 +593,10 @@ class animation
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -565,9 +622,10 @@ class video_note
         return $this;
     }
     function download ($path = false,$botObject = false) {
+        global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
         $file = new file($this->file_id,$botObject);
@@ -660,10 +718,10 @@ class file
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
-        } else {
+        } elseif (!$botObject) {
             return false;
         }
-        if (!is_array($array) && $bot) {
+        if (!is_array($array) && $botObject) {
             $array = json_decode($botObject->getFile($array),true);
             $this->bot = $botObject;
         } elseif (!$bot) {
@@ -675,13 +733,15 @@ class file
         return $this;
     }
 
-    function download ($path = false,$bot = false) {
-        if (!$bot && isset($this->bot)) {
-            $bot = $this->bot;
-        } elseif (!$bot) {
-            return 0;
+    function download ($path = false,$botObject = false)
+    {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
         }
-        $content = file_get_contents('https://api.telegram.org/file/'. $bot->token .'/' . $this->file_path);
+        $content = file_get_contents('https://api.telegram.org/file/'. $botObject->token .'/' . $this->file_path);
         if (!$content) {
             return false;
         }
@@ -691,5 +751,157 @@ class file
             return $content;
         }
     }
+}
+class generic_json {
+    function __construct($array)
+    {
+        if (is_string($array)) {
+            $json = json_decode($array,true);
+        } elseif (is_array($array)) {
+            $json = $array;
+        }
+        foreach ($json as $key => $value) {
+            $this->$key = $value;
+        }
+    }
+}
 
+/*
+ *
+ * Note: entityParser class has been programmed by davtur19
+ * Here is original code: https://github.com/davtur19/TelegramEntityParser
+ *
+ */
+class entityParser {
+    function mbStringToArray($string, $encoding = 'UTF-8')
+    {
+        $array = [];
+        $strlen = mb_strlen($string, $encoding);
+        while ($strlen) {
+            $array[] = mb_substr($string, 0, 1, $encoding);
+            $string = mb_substr($string, 1, $strlen, $encoding);
+            $strlen = mb_strlen($string, $encoding);
+        }
+        return $array;
+    }
+
+    function parseTagOpen($textToParse, $entity, $oTag)
+    {
+        $i = 0;
+        $textParsed = '';
+        $nullControl = false;
+        $string = $this->mbStringToArray($textToParse, 'UTF-16LE');
+        foreach ($string as $s) {
+            if ($s === "\0\0") {
+                $nullControl = !$nullControl;
+            } elseif (!$nullControl) {
+                if ($i == $entity['offset']) {
+                    $textParsed = $textParsed . $oTag;
+                }
+                $i++;
+            }
+            $textParsed = $textParsed . $s;
+        }
+        return $textParsed;
+    }
+
+    function parseTagClose($textToParse, $entity, $cTag)
+    {
+        $i = 0;
+        $textParsed = '';
+        $nullControl = false;
+        $string = $this->mbStringToArray($textToParse, 'UTF-16LE');
+        foreach ($string as $s) {
+            $textParsed = $textParsed . $s;
+            if ($s === "\0\0") {
+                $nullControl = !$nullControl;
+            } elseif (!$nullControl) {
+                $i++;
+                if ($i == ($entity['offset'] + $entity['length'])) {
+                    $textParsed = $textParsed . $cTag;
+                }
+            }
+        }
+        return $textParsed;
+    }
+
+    function htmlEscape($textToParse)
+    {
+        $i = 0;
+        $textParsed = '';
+        $nullControl = false;
+        $string = $this->mbStringToArray($textToParse, 'UTF-8');
+        foreach ($string as $s) {
+            if ($s === "\0") {
+                $nullControl = !$nullControl;
+            } elseif (!$nullControl) {
+                $i++;
+                $textParsed = $textParsed . str_replace(['&', '"', '<', '>'], ["&amp;", "&quot;", "&lt;", "&gt;"], $s);
+            } else {
+                $textParsed = $textParsed . $s;
+            }
+        }
+        return $textParsed;
+    }
+
+
+    function entitiesToHtml($text, $entities)
+    {
+        $textToParse = mb_convert_encoding($text, 'UTF-16BE', 'UTF-8');
+
+        foreach ($entities as $entity) {
+            $href = false;
+            switch ($entity['type']) {
+                case 'bold':
+                    $tag = 'b';
+                    break;
+                case 'italic':
+                    $tag = 'i';
+                    break;
+                case 'underline':
+                    $tag = 'ins';
+                    break;
+                case 'strikethrough':
+                    $tag = 'strike';
+                    break;
+                case 'code':
+                    $tag = 'code';
+                    break;
+                case 'pre':
+                    $tag = 'pre';
+                    break;
+                case 'text_link':
+                    $tag = '<a href="' . $entity['url'] . '">';
+                    $href = true;
+                    break;
+                case 'text_mention':
+                    $tag = '<a href="tg://user?id=' . $entity['user']['id'] . '">';
+                    $href = true;
+                    break;
+                default:
+                    continue 2;
+            }
+
+            if ($href) {
+                $oTag = "\0{$tag}\0";
+                $cTag = "\0</a>\0";
+            } else {
+                $oTag = "\0<{$tag}>\0";
+                $cTag = "\0</{$tag}>\0";
+            }
+            $oTag = mb_convert_encoding($oTag, 'UTF-16BE', 'UTF-8');
+            $cTag = mb_convert_encoding($cTag, 'UTF-16BE', 'UTF-8');
+
+            $textToParse = $this->parseTagOpen($textToParse, $entity, $oTag);
+            $textToParse = $this->parseTagClose($textToParse, $entity, $cTag);
+        }
+
+        if (isset($entity)) {
+            $textToParse = mb_convert_encoding($textToParse, 'UTF-8', 'UTF-16BE');
+            $textToParse = $this->htmlEscape($textToParse);
+            return str_replace("\0", '', $textToParse);
+        }
+
+        return htmlspecialchars($text);
+    }
 }

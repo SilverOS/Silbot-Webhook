@@ -33,11 +33,16 @@ class botApi
         }
     }
 
-    function sendMessage($chat_id, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false, $disable_web_page_preview = false)
+    function sendMessage($chat, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0, $disable_web_page_preview = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
-        if (!$disable_web_page_preview) $disable_web_page_preview = $this->config['disable_web_page_preview'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
+        if ($disable_web_page_preview === 0) $disable_web_page_preview = $this->config['disable_web_page_preview'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -59,10 +64,20 @@ class botApi
         return $this->sendRequest('sendMessage', $args);
     }
 
-    function editMessageText($chat_id, $message_id, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $disable_web_page_preview = false)
+    function editMessageText($chat, $message, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $disable_web_page_preview = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_web_page_preview) $disable_web_page_preview = $this->config['disable_web_page_preview'];
+        if ($disable_web_page_preview === 0) $disable_web_page_preview = $this->config['disable_web_page_preview'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -83,8 +98,18 @@ class botApi
         return $this->sendRequest('editMessageText', $args);
     }
 
-    function editMessageCaption($chat_id, $message_id, $caption, $keyboard = false, $keyboard_type = false, $parse_mode = false)
+    function editMessageCaption($chat, $message, $caption, $keyboard = false, $keyboard_type = false, $parse_mode = false)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
@@ -105,8 +130,19 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('editMessageCaption', $args);
     }
-    function editMessageMedia($chat_id, $message_id, $media, $keyboard = false, $keyboard_type = false)
+
+    function editMessageMedia($chat, $message, $media, $keyboard = false, $keyboard_type = false)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -125,8 +161,19 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('editMessageMedia', $args);
     }
-    function editMessageReplyMarkup($chat_id, $message_id, $keyboard = false, $keyboard_type = false)
+
+    function editMessageReplyMarkup($chat, $message, $keyboard = false, $keyboard_type = false)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -144,8 +191,14 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('editMessageReplyMarkup', $args);
     }
-    function answerCallbackQuery($callback_query_id, $text = '', $show_alert = false, $url = false, $cache_time = false)
+
+    function answerCallbackQuery($callback, $text = '', $show_alert = false, $url = false, $cache_time = false)
     {
+        if (is_a($callback, 'callback')) {
+            $callback_query_id = $callback->id;
+        } else {
+            $callback_query_id = $callback;
+        }
         $args = [
             'callback_query_id' => $callback_query_id,
             'text' => $text,
@@ -156,22 +209,42 @@ class botApi
         return $this->sendRequest('answerCallbackQuery', $args);
     }
 
-    function forwardMessage($chat_id, $from_chat_id, $message_id, $disable_notification = false)
+    function forwardMessage($chat, $from, $message, $disable_notification = 0)
     {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($from, 'chat') || is_a($from, 'user')) {
+            $from_chat_id = $from->id;
+        } else {
+            $from_chat_id = $from;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         $args = [
             'chat_id' => $chat_id,
             'from_chat_id' => $from_chat_id,
             'message_id' => $message_id,
-            'disabla_norification' => $disable_notification,
+            'disable_notification' => $disable_notification,
         ];
         return $this->sendRequest('forwardMessage', $args);
     }
 
-    function sendPhoto($chat_id, $photo, $caption = '', $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendPhoto($chat, $photo, $caption = '', $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -194,10 +267,15 @@ class botApi
         return $this->sendRequest('sendPhoto', $args);
     }
 
-    function sendAudio($chat_id, $audio, $caption = '', $keyboard = false, $keyboard_type = false, $duration = false, $performer = false, $title = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendAudio($chat, $audio, $caption = '', $keyboard = false, $keyboard_type = false, $duration = false, $performer = false, $title = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -224,10 +302,15 @@ class botApi
         return $this->sendRequest('sendAudio', $args);
     }
 
-    function sendDocument($chat_id, $document, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendDocument($chat, $document, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -251,10 +334,15 @@ class botApi
         return $this->sendRequest('sendDocument', $args);
     }
 
-    function sendVideo($chat_id, $video, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $height = false, $width = false, $duration = false, $supports_streaming = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendVideo($chat, $video, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $height = false, $width = false, $duration = false, $supports_streaming = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -282,10 +370,15 @@ class botApi
         return $this->sendRequest('sendVideo', $args);
     }
 
-    function sendAnimation($chat_id, $animation, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $height = false, $width = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendAnimation($chat, $animation, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $height = false, $width = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -312,10 +405,15 @@ class botApi
         return $this->sendRequest('sendAnimation', $args);
     }
 
-    function sendVoice($chat_id, $voice, $caption = '', $keyboard = false, $keyboard_type = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendVoice($chat, $voice, $caption = '', $keyboard = false, $keyboard_type = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -339,10 +437,15 @@ class botApi
         return $this->sendRequest('sendVoice', $args);
     }
 
-    function sendVideoNote($chat_id, $video_note, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $length = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendVideoNote($chat, $video_note, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $length = false, $duration = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -368,9 +471,14 @@ class botApi
         return $this->sendRequest('sendVideoNote', $args);
     }
 
-    function sendSticker($chat_id, $sticker, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendSticker($chat, $sticker, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = 0)
     {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -391,10 +499,15 @@ class botApi
         return $this->sendRequest('sendSticker', $args);
     }
 
-    function sendLocation($chat_id, $longitude, $latitude, $keyboard = false, $live_period = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendLocation($chat, $longitude, $latitude, $keyboard = false, $live_period = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -418,9 +531,14 @@ class botApi
         return $this->sendRequest('sendPhoto', $args);
     }
 
-    function sendContact($chat_id, $phone_number, $first_name, $last_name = false, $vcard = false, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendContact($chat, $phone_number, $first_name, $last_name = false, $vcard = false, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = 0)
     {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -444,9 +562,14 @@ class botApi
         return $this->sendRequest('sendContact', $args);
     }
 
-    function sendPoll($chat_id, $question, $options, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = false)
+    function sendPoll($chat, $question, $options, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = 0)
     {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if ($keyboard) {
             if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
             if ($keyboard_type === 'inline') {
@@ -468,8 +591,13 @@ class botApi
         return $this->sendRequest('sendPoll', $args);
     }
 
-    function sendChatAction($chat_id, $action)
+    function sendChatAction($chat, $action)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
             'action' => $action,
@@ -477,16 +605,21 @@ class botApi
         return $this->sendRequest('sendAction', $args);
     }
 
-    function getFile($file_id)
+    function getFile($file_id, $response_type = false)
     {
         $args = [
             'file_id' => $file_id,
         ];
-        return $this->sendRequest('getFile', $args);
+        return $this->sendRequest('getFile', $args, $response_type);
     }
 
-    function answerInlineQuery($inline_query_id, $results, $switch_pm_text = false, $switch_pm_parameter = false, $cache_time = 300, $is_personal = true, $next_offset = false)
+    function answerInlineQuery($inline, $results, $switch_pm_text = false, $switch_pm_parameter = false, $cache_time = 300, $is_personal = true, $next_offset = false)
     {
+        if (is_a($inline, 'inline')) {
+            $inline_query_id = $inline->id;
+        } else {
+            $inline_query_id = $inline;
+        }
         $args = [
             'inline_query_id' => $inline_query_id,
             'results' => json_encode($results),
@@ -499,8 +632,13 @@ class botApi
         return $this->sendRequest('answerInlineQuery', $args);
     }
 
-    function deleteMessage($chat_id, $message_id)
+    function deleteMessage($chat, $message_id)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
             'message_id' => $message_id,
@@ -508,40 +646,70 @@ class botApi
         return $this->sendRequest('deleteMessage', $args);
     }
 
-    function getChat($chat_id)
+    function getChat($chat, $response_type = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
-        return $this->sendRequest('getChat', $args);
+        return $this->sendRequest('getChat', $args, $response_type);
     }
 
-    function getChatAdministrators($chat_id, $response_type = false)
+    function getChatAdministrators($chat, $response_type = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
         return $this->sendRequest('getChatAdministrators', $args, $response_type);
     }
 
-    function getChatMembersCount($chat_id)
+    function getChatMembersCount($chat)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
         return json_decode($this->sendRequest('getChatMembersCount', $args, 'raw'), true)['result'];
     }
 
-    function exportChatInviteLink($chat_id)
+    function exportChatInviteLink($chat)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
         return json_decode($this->sendRequest('exportChatInviteLink', $args, 'raw'), true)['result'];
     }
 
-    function getChatMember($chat_id, $user_id, $response_type = false)
+    function getChatMember($chat, $user, $response_type = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
@@ -549,8 +717,18 @@ class botApi
         return $this->sendRequest('getChatMember', $args, $response_type);
     }
 
-    function kickChatMember($chat_id, $user_id, $until_date = false)
+    function kickChatMember($chat, $user, $until_date = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
@@ -559,8 +737,18 @@ class botApi
         return $this->sendRequest('kickChatMember', $args);
     }
 
-    function unbanChatMember($chat_id, $user_id)
+    function unbanChatMember($chat, $user)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
@@ -568,8 +756,18 @@ class botApi
         return $this->sendRequest('unbanChatMember', $args);
     }
 
-    function restrictChatMember($chat_id, $user_id, $permissions, $until_date = false)
+    function restrictChatMember($chat, $user, $permissions, $until_date = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
@@ -579,8 +777,18 @@ class botApi
         return $this->sendRequest('restrictChatMember', $args);
     }
 
-    function promoteChatMember($chat_id, $user_id, $can_change_info = false, $can_post_messages = false, $can_edit_messages = false, $can_delete_messages = false, $can_invite_users = false, $can_restrict_members = false, $can_pin_messages = false, $can_promote_members = false)
+    function promoteChatMember($chat, $user, $can_change_info = false, $can_post_messages = false, $can_edit_messages = false, $can_delete_messages = false, $can_invite_users = false, $can_restrict_members = false, $can_pin_messages = false, $can_promote_members = false)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
         $args = [
             'chat_id' => $chat_id,
             'user_id' => $user_id,
@@ -596,8 +804,13 @@ class botApi
         return $this->sendRequest('promoteChatMember', $args);
     }
 
-    function setChatPermissions($chat_id, $permissions)
+    function setChatPermissions($chat, $permissions)
     {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
             'permissions' => $permissions,
@@ -605,8 +818,13 @@ class botApi
         return $this->sendRequest('setChatPermissions', $args);
     }
 
-    function setChatPhoto($chat_id, $photo)
+    function setChatPhoto($chat, $photo)
     {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
             'photo' => $photo,
@@ -614,8 +832,14 @@ class botApi
         return $this->sendRequest('setChatPhoto', $args);
     }
 
-    function setChatTitle($chat_id, $title)
+    function setChatTitle($chat, $title)
     {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+
         $args = [
             'chat_id' => $chat_id,
             'title' => $title,
@@ -623,8 +847,13 @@ class botApi
         return $this->sendRequest('setChatTitle', $args);
     }
 
-    function setChatDescription($chat_id, $description)
+    function setChatDescription($chat, $description)
     {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
             'description' => $description,
@@ -632,17 +861,32 @@ class botApi
         return $this->sendRequest('setChatDescription', $args);
     }
 
-    function deleteChatPhoto($chat_id)
+    function deleteChatPhoto($chat)
     {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
         return $this->sendRequest('deleteChatPhoto', $args);
     }
 
-    function pinChatMessage($chat_id, $message_id, $disable_notification = false)
+    function pinChatMessage($chat, $message, $disable_notification = 0)
     {
-        if (!$disable_notification) $disable_notification = $this->config['disable_notification'];
+        if (is_a($chat, 'chat') ) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message;
+        } else {
+            $message_id = $message;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         $args = [
             'chat_id' => $chat_id,
             'message_id' => $message_id,
@@ -651,19 +895,45 @@ class botApi
         return $this->sendRequest('pinCharMessage', $args);
     }
 
-    function unpinChatMessage($chat_id)
+    function unpinChatMessage($chat)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+
         $args = [
             'chat_id' => $chat_id,
         ];
         return $this->sendRequest('unpinCharMessage', $args);
     }
 
-    function leaveChat($chat_id)
+    function leaveChat($chat)
     {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
         $args = [
             'chat_id' => $chat_id,
         ];
         return $this->sendRequest('leaveChat', $args);
+    }
+    function getMe() {
+        return $this->sendRequest('getMe');
+    }
+    function getWebhookInfo() {
+        return $this->sendRequest('getWebhookInfo');
+    }
+    function setWebhook ($url,$certificate=false,$max_connections=40,$allowed_updates= false) {
+        $args = [
+            'url' => $url,
+            'certificate' => $certificate,
+            'max_connections' => $max_connections,
+            'allowed_updates' => $allowed_updates,
+        ];
+        return $this->sendRequest('setWebhook',$args);
     }
 }

@@ -51,6 +51,8 @@ class update
             $this->callback = new callback_query($this->update['callback_query']);
             if (isset($this->callback->user)) $this->user = $this->callback->user;
             if (isset($this->callback->message)) $this->message = $this->callback->message;
+            if (isset($this->callback->message->chat)) $this->chat = $this->callback->chat;
+            $this->chat->db_save();
             $this->user->db_save();
         }
         return $this;
