@@ -761,7 +761,11 @@ class generic_json {
             $json = $array;
         }
         foreach ($json as $key => $value) {
-            $this->$key = $value;
+            if (is_array($value)) {
+                $this->$key = new generic_json($value);
+            } else {
+                $this->$key = $value;
+            }
         }
     }
 }

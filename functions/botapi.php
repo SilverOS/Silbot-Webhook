@@ -927,6 +927,9 @@ class botApi
     function getWebhookInfo() {
         return $this->sendRequest('getWebhookInfo');
     }
+    function deleteWebhook() {
+        return $this->sendRequest('deleteWebhook');
+    }
     function setWebhook ($url,$certificate=false,$max_connections=40,$allowed_updates= false) {
         $args = [
             'url' => $url,

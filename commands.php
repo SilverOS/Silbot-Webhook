@@ -9,9 +9,9 @@ if (isset($bot)) {
         if (isset($message->text) && $update->type === 'message') {
             if ($message->text == '/start') {
                 $keyboard[] = [['text' => 'hello', 'callback_data' => 'Hello']];
-                $r = $bot->sendMessage($user->id, 'Hello', $keyboard);
+                $r = $bot->sendMessage($user, 'Hello', $keyboard);
             } elseif ($message->text == '/photo') {
-                $bot->sendPhoto($chat->id,'http://www.silveros.it/img/logo.png');
+                $bot->sendPhoto($chat,'http://www.silveros.it/img/silbot.png');
             }
         }
     }
