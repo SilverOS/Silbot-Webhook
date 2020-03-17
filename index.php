@@ -17,7 +17,7 @@ isset($_GET['token']) ? $token = 'bot' . $_GET['token'] : $token = false;
 require 'config.php';
 require 'functions/update.php';
 $bot = new botApi($token,$config);
-$update = new update(file_get_contents('php://input'), $token, $config);
+$update = new update(file_get_contents('php://input'));
 if (isset($update->message)) {
     $message = $update->message;
     if (isset($message->photo)) $photo = $message->photo;
