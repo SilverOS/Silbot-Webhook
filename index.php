@@ -15,6 +15,14 @@
  */
 isset($_GET['token']) ? $token = 'bot' . $_GET['token'] : $token = false;
 require 'config.php';
+if ($config['connection_close']) {
+    ignore_user_abort(true);
+    header('Connection: close');
+    flush();
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+}
 require 'functions/update.php';
 $bot = new botApi($token,$config);
 $update = new update(file_get_contents('php://input'));
