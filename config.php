@@ -27,14 +27,6 @@ $config = [
     'object_response' => false, // If enabled it will automatically return a response object after botApi requests
     'disable_web_page_preview' => false,
 ];
-if ($config['connection_close']) {
-    ignore_user_abort(true);
-    header('Connection: close');
-    flush();
-    if (function_exists('fastcgi_finish_request')) {
-        fastcgi_finish_request();
-    }
-}
 if ($config['token_whitelist']['enabled']) {
     if (!in_array($token,$config['token_whitelist']['tokens'])) {
         exit;
