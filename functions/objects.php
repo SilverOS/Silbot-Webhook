@@ -540,7 +540,7 @@ class audio
             return $file->download($path);
         }
     }
-    function send($chat, $audio, $caption = '', $keyboard = false, $keyboard_type = false,$thumb=false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false,$thumb=false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
         global $bot;
         if (!$botObject && isset($bot)) {
             $botObject = $bot;
