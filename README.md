@@ -1,17 +1,18 @@
-# SilBot 1.4
+# SilBot 1.5
 
 A new version based on OOP programming in PHP 7 with MySQL integration.
 - - -
 # Documentation
  
 You can read the full documentation for this framework on https://github.com/SilverOS/Silbot-Webhook/wiki.
+To easly install this framework you can use the [installer](https://github.com/SilverOS/silbot-installer).
 - - -
 # Webhook
 
 To set the bot's webhook you have to do a setWebhook request to the botAPI using this format:
 <code>https://api.telegram.org/botTOKEN/setWebhook?url=https://your.server.com/path/index.php?token=TOKEN</code>
 
-You can also use <a href='http://t.me/devtoolsforbot'>@DevToolsForBot</a> using Imposta Webhook-> Webhook Standard and writing first the token and next the url to your server in format <code>https://your.server.com/path/index.php?token=TOKEN</code>
+You can also use <a href='http://t.me/devtoolsforbot'>@DevToolsForBot</a> using Set Webhook and writing first the token and next the url to your server in format <code>https://your.server.com/path/index.php?token=TOKEN</code>
 - - -
 # How it works
 
