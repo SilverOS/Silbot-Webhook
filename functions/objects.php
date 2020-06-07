@@ -14,7 +14,7 @@ class user
         isset($this->last_name) ? $this->name = $this->first_name . ' ' . $this->last_name : $this->name = $this->first_name;
         $this->htmlmention = '<a href="tg://user?id='.$this->id.'">'.$this->name.'</a>';
         $this->markdownmention = '[' . $this->name .'](tg://user?id='.$this->id.')';
-        if (isset($config) && $config['database']['active']) {
+        if (isset($config) && $config['database']['active'] && (!(isset($this->unsave_db) && $this->unsave_db))) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
             $q->execute([$this->id]);
             if(!isset($this->username)) $this->username = '';
@@ -99,7 +99,7 @@ class user
         if (!$result->ok || !isset($result->status)) {
             return false;
         } else {
-            if ($result->status == 'left') {
+            if ($result->status == 'left' || $result->status == 'kicked') {
                 return false;
             } else {
                 return true;
@@ -140,7 +140,11 @@ class TGDBUser {
         global $config;
         global $db;
         if (isset($config) && $config['database']['active']) {
-            $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
+            if (is_numeric($id)) {
+                $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ? LIMIT 1');
+            } elseif (is_string($id)) {
+                $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE username LIKE ? LIMIT 1');
+            }
             $q->execute([$id]);
             $this->htmlmention = '<a href="tg://user?id='.$this->chat_id.'">'.$this->name.'</a>';
             $this->markdownmention = '[' . $this->name .'](tg://user?id='.$this->chat_id.')';
@@ -151,14 +155,28 @@ class TGDBUser {
                 foreach ($dbinfo as $column => $value) {
                     $this->$column = $value;
                 }
-                return false;
             }
+        }
+    }
+    function getDBUserObject() {
+        return new DBUser($this->chat_id);
+    }
+    function getUserObject () {
+        if ($this->type == 'user') {
+            return new user(['id' => $this->id,'username' => $this->username,'first_name' => $this->name,'language_code' => $this->lang,'type' => $this->type,'unsave_db' => true]);
+        }
+    }
+    function getChatObject() {
+        if ($this->type == 'user') {
+            return new chat(['id' => $this->id,'username' => $this->username,'first_name' => $this->name,'language_code' => $this->lang,'type' => $this->type,'unsave_db' => true]);
+        } else {
+            return new chat(['id' => $this->id,'username' => $this->username,'title' => $this->name,'language_code' => $this->lang,'type' => $this->type,'unsave_db' => true]);
         }
     }
     function setColumn ($column,$value) {
         global $db;
         global $config;
-        $q = $db->prepare('UPDATE ' . $config['database']['universal_table'] . ' SET ' . $column .' = ? WHERE chat_id = ?');
+        $q = $db->prepare('UPDATE ' . $config['database']['universal_table'] . ' SET ' . $column .' = ? WHERE chat_id = ? LIMIT 1');
         $q->execute([$value,$this->chat_id]);
     }
 }
@@ -178,7 +196,7 @@ class chat
         } else {
             isset($this->last_name) ? $this->name = $this->first_name . ' ' . $this->last_name : $this->name = $this->first_name;
         }
-        if (isset($config) && $config['database']['active']) {
+        if (isset($config) && $config['database']['active'] && (!(isset($this->unsave_db) && $this->unsave_db))) {
             $q = $db->prepare('SELECT * FROM ' . $config['database']['universal_table'] . ' WHERE chat_id = ?');
             $q->execute([$this->id]);
             if(!isset($this->username)) $this->username = '';
@@ -302,6 +320,8 @@ class message
                 $this->venue = new venue($value);
             } elseif ($key === 'sticker') {
                 $this->sticker = new sticker($value);
+            } elseif ($key === 'dice') {
+                $this->sticker = new dice($value);
             } elseif ($key === 'poll') {
                 $this->poll = new poll($value);
             } else {
@@ -419,7 +439,10 @@ class inline_query
         }
     }
 }
-// Media
+
+/*
+ *  MEDIA
+ */
 
 class photo
 {
@@ -442,6 +465,15 @@ class photo
         if ($file) {
             return $file->download($path);
         }
+    }
+    function send($chat,$caption='',$keyboard=false,$keyboard_type=false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendPhoto($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$parse_mode,$reply_to_message_id,$disable_notification);
     }
 
 }
@@ -471,6 +503,15 @@ class sticker
             return $file->download($path);
         }
     }
+    function send($chat,$keyboard=false,$keyboard_type=false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendSticker($chat, $this->file_id, $keyboard, $keyboard_type, $reply_to_message_id, $disable_notification);
+    }
 
 }
 class audio
@@ -479,7 +520,11 @@ class audio
     function __construct($array)
     {
         foreach ($array as $key => $value) {
-            $this->$key = $value;
+            if ($key === 'thumb') {
+                $this->$key = new photo ($value);
+            } else {
+                $this->$key = $value;
+            }
         }
         return $this;
     }
@@ -494,6 +539,15 @@ class audio
         if ($file) {
             return $file->download($path);
         }
+    }
+    function send($chat, $audio, $caption = '', $keyboard = false, $keyboard_type = false,$thumb=false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendAudio($chat, $this->file_id,$caption,$keyboard,$keyboard_type,$this->duration,$this->performer,$this->title,$thumb,$parse_mode,$reply_to_message_id,$disable_notification);
     }
 
 }
@@ -519,6 +573,15 @@ class voice
         if ($file) {
             return $file->download($path);
         }
+    }
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject=false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendVoice($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$this->duration,$parse_mode,$reply_to_message_id,$disable_notification);
     }
 }
 
@@ -548,6 +611,15 @@ class document
             return $file->download($path);
         }
     }
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false,$thumb=false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject = false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendDocument($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$thumb,$parse_mode,$reply_to_message_id,$disable_notification);
+    }
 }
 class video
 {
@@ -575,7 +647,15 @@ class video
             return $file->download($path);
         }
     }
-
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $supports_streaming = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject=false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $bot->sendVideo($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$thumb,$this->height,$this->width,$this->duration,$supports_streaming,$parse_mode,$reply_to_message_id,$disable_notification);
+    }
 }
 
 class animation
@@ -604,7 +684,15 @@ class animation
             return $file->download($path);
         }
     }
-
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject=false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendAnimation($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$thumb,$this->height,$this->width,$this->duration,$parse_mode,$reply_to_message_id,$disable_notification);
+    }
 }
 
 class video_note
@@ -633,10 +721,29 @@ class video_note
             return $file->download($path);
         }
     }
-
+    function send($chat, $caption = '', $keyboard = false, $keyboard_type = false, $thumb = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0,$botObject=false) {
+        global $bot;
+        if (!$botObject && isset($bot)) {
+            $botObject = $bot;
+        } elseif (!$botObject) {
+            return false;
+        }
+        return $botObject->sendVideoNote($chat,$this->file_id,$caption,$keyboard,$keyboard_type,$thumb,$this->lenght,$this->duration,$parse_mode,$reply_to_message_id,$disable_notification);
+    }
 }
 
 class contact
+{
+    var $array;
+    function __construct($array)
+    {
+        foreach ($array as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this;
+    }
+}
+class dice
 {
     var $array;
     function __construct($array)
@@ -685,8 +792,8 @@ class poll
     {
         foreach ($array as $key => $value) {
             if ($key === 'options') {
-                foreach ($value as $option) {
-                    $this->$key->$option = new pollOption ($value);
+                foreach ($value as $option => $val) {
+                    $this->$key[$option]= new pollOption ($val);
                 }
             } else {
                 $this->$key = $value;
@@ -694,12 +801,17 @@ class poll
         }
         return $this;
     }
-
+    function getOptions() {
+        $options = [];
+        foreach ($this->options as $option) {
+            $options[] = $option->text;
+        }
+        return $options;
+    }
 }
 
 class pollOption
 {
-    var $array;
     function __construct($array)
     {
         foreach ($array as $key => $value) {

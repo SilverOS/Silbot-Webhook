@@ -18,4 +18,5 @@ chat_id bigint(0),
 state varchar(50),
 PRIMARY KEY (chat_id))');
     $install->execute();
+    die('Database Installed');
 }

@@ -5,11 +5,19 @@ class botApi
     var $token;
     var $config;
 
-    function __construct($token, $config)
+    function __construct($token, $config=false,$parse_mode='HTML',$keyboard_type='inline',$disable_notification = false,$object_response = false,$disable_web_page_preview=false)
     {
+        if (!$config) {
+            $config = [
+                'parse_mode' => $parse_mode,
+                'keyboard_type' =>  $keyboard_type, // Can be 'inline' or 'reply' or 'hide'
+                'disable_notification' => $disable_notification,
+                'object_response' => $object_response, // If enabled it will automatically return a response object after botApi requests
+                'disable_web_page_preview' => $disable_web_page_preview,
+            ];
+        }
         $this->token = $token;
         $this->config = $config;
-        return $this;
     }
 
     function sendRequest($method, $args = [], $response_type = false)
@@ -33,6 +41,9 @@ class botApi
         }
     }
 
+    /*
+    * SEND FUNCTIONS
+    */
     function sendMessage($chat, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0, $disable_web_page_preview = 0)
     {
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
@@ -63,179 +74,21 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('sendMessage', $args);
     }
-
-    function editMessageText($chat, $message, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $disable_web_page_preview = 0)
-    {
+    function sendMediaGroup($chat,$media,$reply_to_message_id = false,$disable_notification = 0) {
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
             $chat_id = $chat->id;
         } else {
             $chat_id = $chat;
-        }
-        if (is_a($message, 'message')) {
-            $message_id = $message;
-        } else {
-            $message_id = $message;
-        }
-        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if ($disable_web_page_preview === 0) $disable_web_page_preview = $this->config['disable_web_page_preview'];
-        if ($keyboard) {
-            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
-            if ($keyboard_type === 'inline') {
-                $reply_markup = ['inline_keyboard' => $keyboard];
-            } elseif ($keyboard_type === 'reply') {
-                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
-            } elseif ($keyboard_type === 'hide') {
-                $reply_markup = ['hide_keyboard' => true];
-            }
-        }
-        $args = [
-            'chat_id' => $chat_id,
-            'text' => $text,
-            'message_id' => $message_id,
-            'parse_mode' => $parse_mode,
-            'disable_web_page_preview' => $disable_web_page_preview,];
-        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('editMessageText', $args);
-    }
-
-    function editMessageCaption($chat, $message, $caption, $keyboard = false, $keyboard_type = false, $parse_mode = false)
-    {
-        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
-            $chat_id = $chat->id;
-        } else {
-            $chat_id = $chat;
-        }
-        if (is_a($message, 'message')) {
-            $message_id = $message;
-        } else {
-            $message_id = $message;
-        }
-        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
-        if ($keyboard) {
-            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
-            if ($keyboard_type === 'inline') {
-                $reply_markup = ['inline_keyboard' => $keyboard];
-            } elseif ($keyboard_type === 'reply') {
-                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
-            } elseif ($keyboard_type === 'hide') {
-                $reply_markup = ['hide_keyboard' => true];
-            }
-        }
-        $args = [
-            'chat_id' => $chat_id,
-            'caption' => $caption,
-            'message_id' => $message_id,
-            'parse_mode' => $parse_mode,
-        ];
-        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('editMessageCaption', $args);
-    }
-
-    function editMessageMedia($chat, $message, $media, $keyboard = false, $keyboard_type = false)
-    {
-        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
-            $chat_id = $chat->id;
-        } else {
-            $chat_id = $chat;
-        }
-        if (is_a($message, 'message')) {
-            $message_id = $message;
-        } else {
-            $message_id = $message;
-        }
-        if ($keyboard) {
-            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
-            if ($keyboard_type === 'inline') {
-                $reply_markup = ['inline_keyboard' => $keyboard];
-            } elseif ($keyboard_type === 'reply') {
-                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
-            } elseif ($keyboard_type === 'hide') {
-                $reply_markup = ['hide_keyboard' => true];
-            }
         }
         $args = [
             'chat_id' => $chat_id,
             'media' => $media,
-            'message_id' => $message_id,
+            'reply_to_message_id' => $reply_to_message_id,
+            'disable_notigication' => $disable_notification,
         ];
-        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('editMessageMedia', $args);
+        return $this->sendRequest('sendMediaGroup',$args);
     }
-
-    function editMessageReplyMarkup($chat, $message, $keyboard = false, $keyboard_type = false)
-    {
-        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
-            $chat_id = $chat->id;
-        } else {
-            $chat_id = $chat;
-        }
-        if (is_a($message, 'message')) {
-            $message_id = $message;
-        } else {
-            $message_id = $message;
-        }
-        if ($keyboard) {
-            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
-            if ($keyboard_type === 'inline') {
-                $reply_markup = ['inline_keyboard' => $keyboard];
-            } elseif ($keyboard_type === 'reply') {
-                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
-            } elseif ($keyboard_type === 'hide') {
-                $reply_markup = ['hide_keyboard' => true];
-            }
-        }
-        $args = [
-            'chat_id' => $chat_id,
-            'message_id' => $message_id,
-        ];
-        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('editMessageReplyMarkup', $args);
-    }
-
-    function answerCallbackQuery($callback, $text = '', $show_alert = false, $url = false, $cache_time = false)
-    {
-        if (is_a($callback, 'callback')) {
-            $callback_query_id = $callback->id;
-        } else {
-            $callback_query_id = $callback;
-        }
-        $args = [
-            'callback_query_id' => $callback_query_id,
-            'text' => $text,
-            'show_alert' => $show_alert,
-            'cache_time' => $cache_time
-        ];
-        if ($url) $args['url'] = $url;
-        return $this->sendRequest('answerCallbackQuery', $args);
-    }
-
-    function forwardMessage($chat, $from, $message, $disable_notification = 0)
-    {
-        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
-            $chat_id = $chat->id;
-        } else {
-            $chat_id = $chat;
-        }
-        if (is_a($from, 'chat') || is_a($from, 'user')) {
-            $from_chat_id = $from->id;
-        } else {
-            $from_chat_id = $from;
-        }
-        if (is_a($message, 'message')) {
-            $message_id = $message;
-        } else {
-            $message_id = $message;
-        }
-        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
-        $args = [
-            'chat_id' => $chat_id,
-            'from_chat_id' => $from_chat_id,
-            'message_id' => $message_id,
-            'disable_notification' => $disable_notification,
-        ];
-        return $this->sendRequest('forwardMessage', $args);
-    }
-
     function sendPhoto($chat, $photo, $caption = '', $keyboard = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
@@ -498,7 +351,38 @@ class botApi
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
         return $this->sendRequest('sendSticker', $args);
     }
-
+    function sendVenue($chat, $longitude, $latitude,$title,$address,$foursquare_id=false,$foursquare_type=false, $keyboard = false, $keyboard_type = false,  $reply_to_message_id = false, $disable_notification = 0)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'longitude' => $longitude,
+            'latitude' => $latitude,
+            'title' => $title,
+            'address' => $address,
+            'foursquare_id' => $foursquare_id,
+            'foursquare_type' => $foursquare_type,
+            'reply_to_message_id' => $reply_to_message_id,
+            'disable_notification' => $disable_notification,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('sendVenue', $args);
+    }
     function sendLocation($chat, $longitude, $latitude, $keyboard = false, $live_period = false, $keyboard_type = false, $parse_mode = false, $reply_to_message_id = false, $disable_notification = 0)
     {
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
@@ -528,9 +412,8 @@ class botApi
             'disable_notification' => $disable_notification,
         ];
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('sendPhoto', $args);
+        return $this->sendRequest('sendLocation', $args);
     }
-
     function sendContact($chat, $phone_number, $first_name, $last_name = false, $vcard = false, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = 0)
     {
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
@@ -580,6 +463,7 @@ class botApi
                 $reply_markup = ['hide_keyboard' => true];
             }
         }
+        if (is_array($options)) $options = json_encode($options);
         $args = [
             'chat_id' => $chat_id,
             'question' => $question,
@@ -604,13 +488,53 @@ class botApi
         ];
         return $this->sendRequest('sendAction', $args);
     }
-
-    function getFile($file_id, $response_type = false)
+    function sendDice($chat, $emoji, $keyboard = false, $keyboard_type = false, $reply_to_message_id = false, $disable_notification = 0)
     {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
         $args = [
-            'file_id' => $file_id,
+            'chat_id' => $chat_id,
+            'emoji' => $emoji,
+            'reply_to_message_id' => $reply_to_message_id,
+            'disable_notification' => $disable_notification,
         ];
-        return $this->sendRequest('getFile', $args, $response_type);
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('sendMessage', $args);
+    }
+
+    /*
+     *  OTHER FUNCTIONS
+     */
+
+    function answerCallbackQuery($callback, $text = '', $show_alert = false, $url = false, $cache_time = false)
+    {
+        if (is_a($callback, 'callback')) {
+            $callback_query_id = $callback->id;
+        } else {
+            $callback_query_id = $callback;
+        }
+        $args = [
+            'callback_query_id' => $callback_query_id,
+            'text' => $text,
+            'show_alert' => $show_alert,
+            'cache_time' => $cache_time
+        ];
+        if ($url) $args['url'] = $url;
+        return $this->sendRequest('answerCallbackQuery', $args);
     }
 
     function answerInlineQuery($inline, $results, $switch_pm_text = false, $switch_pm_parameter = false, $cache_time = 300, $is_personal = true, $next_offset = false)
@@ -632,18 +556,423 @@ class botApi
         return $this->sendRequest('answerInlineQuery', $args);
     }
 
-    function deleteMessage($chat, $message_id)
+    function forwardMessage($chat, $from, $message, $disable_notification = 0)
     {
         if (is_a($chat, 'chat') || is_a($chat, 'user')) {
             $chat_id = $chat->id;
         } else {
             $chat_id = $chat;
         }
+        if (is_a($from, 'chat') || is_a($from, 'user')) {
+            $from_chat_id = $from->id;
+        } else {
+            $from_chat_id = $from;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if ($disable_notification === 0) $disable_notification = $this->config['disable_notification'];
+        $args = [
+            'chat_id' => $chat_id,
+            'from_chat_id' => $from_chat_id,
+            'message_id' => $message_id,
+            'disable_notification' => $disable_notification,
+        ];
+        return $this->sendRequest('forwardMessage', $args);
+    }
+    function createNewStickerSet($user,$name,$title,$emojis,$png_sticker=false,$tgs_sticker=false,$contains_masks=false,$mask_position	=false) {
+        if (is_a($user, 'chat') || is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
+        $args = [
+            'user_id' => $user_id,
+            'name' => $name,
+            'title' => $title,
+            'emojis' => $emojis,
+            'png_sticker' => $png_sticker,
+            'tgs_sticker' => $tgs_sticker,
+            'contains_masks' => $contains_masks,
+            'mask_position' => $mask_position,
+        ];
+        return $this->sendRequest('createNewStickerSet', $args);
+    }
+    function addStickerToSet($user,$name,$emojis,$png_sticker=false,$tgs_sticker=false,$mask_position	=false) {
+        if (is_a($user, 'chat') || is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
+        $args = [
+            'user_id' => $user_id,
+            'name' => $name,
+            'emojis' => $emojis,
+            'png_sticker' => $png_sticker,
+            'tgs_sticker' => $tgs_sticker,
+            'mask_position' => $mask_position,
+        ];
+        return $this->sendRequest('addStickerToSet', $args);
+    }
+    function setStickerPositionInSet($sticker,$position) {
+        $args = [
+            'sticker' => $sticker,
+            'position' => $position,
+        ];
+        return $this->sendRequest('setStickerPositionInSet', $args);
+    }
+    function setStickerSetThumb($name,$user,$thumb=false) {
+        if (is_a($user, 'chat') || is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
+        $args = [
+            'user' => $user_id,
+            'name' => $name,
+            'thumb' => $thumb,
+        ];
+        return $this->sendRequest('setStickerPositionInSet', $args);
+    }
+    function deleteStickerFromSet($sticker) {
+        $args = [
+            'sticker' => $sticker,
+        ];
+        return $this->sendRequest('deleteStickerFromSet', $args);
+    }
+    /*
+     * UPDATING MESSAGES
+     */
+
+    function editMessageText($chat, $message, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $disable_web_page_preview = 0)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
+        if ($disable_web_page_preview === 0) $disable_web_page_preview = $this->config['disable_web_page_preview'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'text' => $text,
+            'message_id' => $message_id,
+            'parse_mode' => $parse_mode,
+            'disable_web_page_preview' => $disable_web_page_preview,];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageText', $args);
+    }
+    function editInlineMessageText($inline_message_id, $text, $keyboard = false, $keyboard_type = false, $parse_mode = false, $disable_web_page_preview = 0)
+    {
+        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
+        if ($disable_web_page_preview === 0) $disable_web_page_preview = $this->config['disable_web_page_preview'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'text' => $text,
+            'inline_message_id' => $inline_message_id,
+            'parse_mode' => $parse_mode,
+            'disable_web_page_preview' => $disable_web_page_preview,];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageText', $args);
+    }
+    function editMessageCaption($chat, $message, $caption, $keyboard = false, $keyboard_type = false, $parse_mode = false)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'caption' => $caption,
+            'message_id' => $message_id,
+            'parse_mode' => $parse_mode,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageCaption', $args);
+    }
+    function editInlineMessageCaption($inline_message_id, $caption, $keyboard = false, $keyboard_type = false, $parse_mode = false)
+    {
+        if (!$parse_mode) $parse_mode = $this->config['parse_mode'];
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'caption' => $caption,
+            'message_id' => $inline_message_id,
+            'parse_mode' => $parse_mode,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageCaption', $args);
+    }
+
+    function editMessageMedia($chat, $message, $media, $keyboard = false, $keyboard_type = false)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'media' => $media,
+            'message_id' => $message_id,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageMedia', $args);
+    }
+    function editInlineMessageMedia($inline_message_id, $media, $keyboard = false, $keyboard_type = false)
+    {
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'inline_message_id' => $inline_message_id,
+            'media' => $media,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageMedia', $args);
+    }
+
+
+    function editMessageReplyMarkup($chat, $message, $keyboard = false, $keyboard_type = false)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageReplyMarkup', $args);
+    }
+    function editInlineMessageReplyMarkup($inline_message_id, $keyboard = false, $keyboard_type = false)
+    {
+        if ($keyboard) {
+            if (!$keyboard_type) $keyboard_type = $this->config['keyboard_type'];
+            if ($keyboard_type === 'inline') {
+                $reply_markup = ['inline_keyboard' => $keyboard];
+            } elseif ($keyboard_type === 'reply') {
+                $reply_markup = ['keyboard' => $keyboard, 'resize_keyboard' => true];
+            } elseif ($keyboard_type === 'hide') {
+                $reply_markup = ['hide_keyboard' => true];
+            }
+        }
+        $args = [
+            'inline_message_id' => $inline_message_id,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageReplyMarkup', $args);
+    }
+
+
+    function editMessageLiveLocation($chat,$message, $latitude,$longitude,$keyboard = false)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if ($keyboard) {
+            $reply_markup = ['inline_keyboard' => $keyboard];
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+            'latitude' => $latitude,
+            'logitude' => $longitude,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageLiveLocation', $args);
+    }
+    function editInlineMessageLiveLocation($inline_message_id, $latitude,$longitude,$keyboard = false)
+    {
+        if ($keyboard) {
+            $reply_markup = ['inline_keyboard' => $keyboard];
+        }
+        $args = [
+            'inline_message_id' => $inline_message_id,
+            'latitude' => $latitude,
+            'logitude' => $longitude,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('editMessageLiveLocation', $args);
+    }
+    function stopMessageLiveLocation($chat,$message,$keyboard = false)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
+        if ($keyboard) {
+            $reply_markup = ['inline_keyboard' => $keyboard];
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('stopMessageLiveLocation', $args);
+    }
+    function stopInlineMessageLiveLocation($inline_message_id,$keyboard = false)
+    {
+        if ($keyboard) {
+            $reply_markup = ['inline_keyboard' => $keyboard];
+        }
+        $args = [
+            'inline_message_id' => $inline_message_id,
+        ];
+        if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
+        return $this->sendRequest('stopMessageLiveLocation', $args);
+    }
+
+
+    function deleteMessage($chat, $message)
+    {
+        if (is_a($chat, 'chat') || is_a($chat, 'user')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        if (is_a($message, 'message')) {
+            $message_id = $message->message_id;
+        } else {
+            $message_id = $message;
+        }
         $args = [
             'chat_id' => $chat_id,
             'message_id' => $message_id,
         ];
         return $this->sendRequest('deleteMessage', $args);
+    }
+
+
+
+    /*
+     * GET METHODS
+     */
+
+    function getFile($file_id, $response_type = false)
+    {
+        $args = [
+            'file_id' => $file_id,
+        ];
+        return $this->sendRequest('getFile', $args, $response_type);
+    }
+
+    function getUserProfilePhotos($user, $offset = false,$limit=100)
+    {
+        if (is_a($user, 'chat') || is_a($user, 'user')) {
+            $user_id = $user->id;
+        } else {
+            $user_id = $user;
+        }
+        $args = [
+            'file_id' => $user_id,
+            'offset' => $offset,
+            'limit' => $limit,
+        ];
+        return $this->sendRequest('getUserProfilePhotos', $args);
     }
 
     function getChat($chat, $response_type = false)
@@ -671,7 +1000,6 @@ class botApi
         ];
         return $this->sendRequest('getChatAdministrators', $args, $response_type);
     }
-
     function getChatMembersCount($chat)
     {
         if (is_a($chat, 'chat')) {
@@ -684,20 +1012,6 @@ class botApi
         ];
         return json_decode($this->sendRequest('getChatMembersCount', $args, 'raw'), true)['result'];
     }
-
-    function exportChatInviteLink($chat)
-    {
-        if (is_a($chat, 'chat')) {
-            $chat_id = $chat->id;
-        } else {
-            $chat_id = $chat;
-        }
-        $args = [
-            'chat_id' => $chat_id,
-        ];
-        return json_decode($this->sendRequest('exportChatInviteLink', $args, 'raw'), true)['result'];
-    }
-
     function getChatMember($chat, $user, $response_type = false)
     {
         if (is_a($chat, 'chat')) {
@@ -715,6 +1029,28 @@ class botApi
             'user_id' => $user_id,
         ];
         return $this->sendRequest('getChatMember', $args, $response_type);
+    }
+    function getStickerSet($name) {
+        $args = [
+          'name' => $name,
+        ];
+        return $this->sendRequest('getStickerSet',$args);
+    }
+
+    /*
+     * GROUP MANAGEMENT FUNCTIONS
+     */
+    function exportChatInviteLink($chat)
+    {
+        if (is_a($chat, 'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return json_decode($this->sendRequest('exportChatInviteLink', $args, 'raw'), true)['result'];
     }
 
     function kickChatMember($chat, $user, $until_date = false)
@@ -860,7 +1196,32 @@ class botApi
         ];
         return $this->sendRequest('setChatDescription', $args);
     }
+    function setChatStickerSet($chat, $sticker_set_name)
+    {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        $args = [
+            'chat_id' => $chat_id,
+            'sticker_set_name' => $sticker_set_name,
+        ];
+        return $this->sendRequest('setChatStickerSet', $args);
+    }
 
+    function deleteChatStickerSet($chat)
+    {
+        if (is_a($chat,'chat')) {
+            $chat_id = $chat->id;
+        } else {
+            $chat_id = $chat;
+        }
+        $args = [
+            'chat_id' => $chat_id,
+        ];
+        return $this->sendRequest('deleteChatStickerSet', $args);
+    }
     function deleteChatPhoto($chat)
     {
         if (is_a($chat,'chat')) {
@@ -921,8 +1282,21 @@ class botApi
         ];
         return $this->sendRequest('leaveChat', $args);
     }
+
+    /*
+     * BOT FUNCTIONS
+     */
     function getMe() {
         return $this->sendRequest('getMe');
+    }
+    function getMyCommands() {
+        return $this->sendRequest('getMyCommands');
+    }
+    function setMyCommands($commands) {
+        $args = [
+            'commands' => $commands,
+        ];
+        return $this->sendRequest('setMyCommands',$args);
     }
     function getWebhookInfo() {
         return $this->sendRequest('getWebhookInfo');

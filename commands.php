@@ -1,18 +1,27 @@
 <?php
-if (isset($bot)) {
-    if ($update->type === 'callback_query' && isset($callback)) {
-        if ($callback->data == 'Hello' && isset($user)) {
-            $bot->editMessageText($message->chat->id, $message->message_id, 'Hello!');
-            $r = $bot->answerCallbackQuery($callback->id, 'Ok');
-        }
-    } else {
-        if (isset($message->text) && $update->type === 'message') {
-            if ($message->text == '/start') {
-                $keyboard[] = [['text' => 'hello', 'callback_data' => 'Hello']];
-                $r = $bot->sendMessage($user, 'Hello', $keyboard);
-            } elseif ($message->text == '/photo') {
-                $bot->sendPhoto($chat,'http://www.silveros.it/img/silbot.png');
-            }
-        }
+if (isset($bot) && isset($chat) && isset($message) && isset($user)) {
+    if ($message->text == '/start') {
+        $keyboard = [
+            [['text' => 'Callback Test','callback_data' => '/test']],
+            [['text' => 'URL Example','url' => 'https://github.com/SilverOS/Silbot-Webhook'],['text' => 'Switch Inline','switch_inline_query' => 'Example Text']],
+        ];
+        $bot->sendMessage($chat,'Hello ' . $user->htmlmention . '!',$keyboard,'inline','html');
+    } elseif (isset($callback->data) && $callback->data == '/test') {
+        $bot->editMessageText($chat,$message,'Message edited!');
+        $callback->answer('Callback Answered',true);
+    } elseif ($message->text == '/delete') {
+        $message->deleteMessage();
+        /*
+         * You can also do
+         * $bot->deleteMessage($chat,$message);
+         * or
+         * $bot->deleteMessage($chat->id,$message->id);
+         */
+    } elseif ($message->text == '/photo') {
+        $bot->sendPhoto($chat,'https://www.silveros.it/img/silbot.png');
+    } elseif (isset($photo)) {
+        $photo->send($chat,'Here is your photo!');
+    } elseif (isset($sticker)) {
+        $r = $sticker->send($chat);
     }
 }
