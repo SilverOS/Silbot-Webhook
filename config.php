@@ -11,7 +11,7 @@ $config = [
         'start_disabled' => [''], // Array of files to not load in plugins/start folder
         'end_disabled' => [''], // Array of files to not load in plugins/end folder
     ],
-    'database' => [
+    'database' => [ //MySQL Credentials
         'active' => true,
         'ip' => 'localhost',
         'user' => '',
