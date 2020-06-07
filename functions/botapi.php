@@ -513,7 +513,7 @@ class botApi
             'disable_notification' => $disable_notification,
         ];
         if (isset($reply_markup)) $args['reply_markup'] = json_encode($reply_markup);
-        return $this->sendRequest('sendMessage', $args);
+        return $this->sendRequest('sendDice', $args);
     }
 
     /*
